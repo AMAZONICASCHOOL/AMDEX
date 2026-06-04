@@ -1,0 +1,2461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Amazónica RPG — Sistema de Recompensas Escolar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg-dark:#0a0a1a;
+  --bg-panel:#0f0f2e;
+  --bg-card:#141432;
+  --bg-hover:#1a1a42;
+  --accent-gold:#ffd700;
+  --accent-green:#00ff88;
+  --accent-blue:#00aaff;
+  --accent-purple:#aa44ff;
+  --accent-red:#ff4455;
+  --accent-orange:#ff8800;
+  --text-main:#e8e8ff;
+  --text-dim:#8888aa;
+  --border:#2a2a5a;
+  --border-bright:#4444aa;
+  --pixel-shadow: 3px 3px 0px rgba(0,0,0,0.8);
+  --glow-gold: 0 0 10px #ffd700, 0 0 20px #ffd700;
+  --glow-green: 0 0 10px #00ff88, 0 0 20px #00ff88;
+  --glow-blue: 0 0 10px #00aaff, 0 0 20px #00aaff;
+  --glow-purple: 0 0 10px #aa44ff, 0 0 20px #aa44ff;
+}
+html,body,#root{height:100%;width:100%;}
+body{
+  background-color:var(--bg-dark);
+  color:var(--text-main);
+  font-family:'VT323',monospace;
+  font-size:18px;
+  overflow-x:hidden;
+  image-rendering:pixelated;
+}
+/* Pixel art star background */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 10%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 75%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(2px 2px at 50% 50%, rgba(255,215,0,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 90%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 5%, rgba(255,255,255,0.8) 0%, transparent 100%),
+    linear-gradient(180deg, #0a0a1a 0%, #050518 50%, #0a0a1a 100%);
+  z-index:-1;
+  pointer-events:none;
+}
+/* Scrollbar */
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-track{background:#0a0a1a;}
+::-webkit-scrollbar-thumb{background:#2a2a6a;image-rendering:pixelated;}
+
+/* PIXEL ART BUTTON */
+.btn{
+  font-family:'Press Start 2P',monospace;
+  font-size:9px;
+  padding:10px 16px;
+  border:none;
+  cursor:pointer;
+  position:relative;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  transition:all 0.1s;
+  image-rendering:pixelated;
+}
+.btn::after{
+  content:'';
+  position:absolute;
+  bottom:-4px;
+  right:-4px;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  z-index:-1;
+}
+.btn:active{transform:translate(2px,2px);}
+.btn:active::after{display:none;}
+
+.btn-gold{background:var(--accent-gold);color:#000;}
+.btn-green{background:var(--accent-green);color:#000;}
+.btn-blue{background:var(--accent-blue);color:#000;}
+.btn-purple{background:var(--accent-purple);color:#fff;}
+.btn-red{background:var(--accent-red);color:#fff;}
+.btn-dark{background:var(--bg-hover);color:var(--text-main);border:2px solid var(--border-bright);}
+.btn-sm{font-size:7px;padding:6px 10px;}
+.btn-xs{font-size:6px;padding:4px 8px;}
+
+/* PIXEL PANEL */
+.pixel-panel{
+  background:var(--bg-panel);
+  border:3px solid var(--border-bright);
+  box-shadow:4px 4px 0 #000, inset 1px 1px 0 rgba(255,255,255,0.05);
+  padding:20px;
+  position:relative;
+}
+.pixel-panel::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--border-bright),transparent);
+}
+
+/* PIXEL CARD */
+.pixel-card{
+  background:var(--bg-card);
+  border:2px solid var(--border);
+  padding:15px;
+  position:relative;
+  transition:all 0.2s;
+}
+.pixel-card:hover{
+  border-color:var(--border-bright);
+  transform:translateY(-2px);
+  box-shadow:0 4px 0 #000;
+}
+
+/* TITLE GLOW */
+.title-gold{
+  font-family:'Press Start 2P',monospace;
+  color:var(--accent-gold);
+  text-shadow:var(--glow-gold);
+}
+.title-green{
+  font-family:'Press Start 2P',monospace;
+  color:var(--accent-green);
+  text-shadow:var(--glow-green);
+}
+.title-blue{
+  font-family:'Press Start 2P',monospace;
+  color:var(--accent-blue);
+  text-shadow:var(--glow-blue);
+}
+.title-purple{
+  font-family:'Press Start 2P',monospace;
+  color:var(--accent-purple);
+  text-shadow:var(--glow-purple);
+}
+
+/* PROGRESS BAR */
+.progress-bar-wrap{
+  background:#111130;
+  border:2px solid var(--border);
+  height:18px;
+  position:relative;
+  overflow:hidden;
+}
+.progress-bar-fill{
+  height:100%;
+  position:relative;
+  transition:width 0.5s;
+}
+.progress-bar-fill::after{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:40%;
+  background:rgba(255,255,255,0.15);
+}
+.progress-xp .progress-bar-fill{background:linear-gradient(90deg,#aa44ff,#ff88ff);}
+.progress-hp .progress-bar-fill{background:linear-gradient(90deg,#ff2244,#ff6688);}
+
+/* INPUT */
+.pixel-input{
+  background:#0a0a20;
+  border:2px solid var(--border-bright);
+  color:var(--text-main);
+  font-family:'VT323',monospace;
+  font-size:20px;
+  padding:10px 14px;
+  width:100%;
+  outline:none;
+  transition:border-color 0.2s;
+}
+.pixel-input:focus{border-color:var(--accent-blue);box-shadow:0 0 8px rgba(0,170,255,0.3);}
+.pixel-input::placeholder{color:var(--text-dim);}
+.pixel-select{
+  background:#0a0a20;
+  border:2px solid var(--border-bright);
+  color:var(--text-main);
+  font-family:'VT323',monospace;
+  font-size:18px;
+  padding:8px 12px;
+  width:100%;
+  outline:none;
+}
+
+/* BADGE */
+.badge{
+  font-family:'Press Start 2P',monospace;
+  font-size:7px;
+  padding:4px 8px;
+  display:inline-block;
+}
+.badge-gold{background:var(--accent-gold);color:#000;}
+.badge-green{background:var(--accent-green);color:#000;}
+.badge-blue{background:var(--accent-blue);color:#000;}
+.badge-purple{background:var(--accent-purple);color:#fff;}
+.badge-red{background:var(--accent-red);color:#fff;}
+.badge-orange{background:var(--accent-orange);color:#000;}
+.badge-gray{background:#333355;color:var(--text-dim);}
+
+/* NAV */
+.nav-item{
+  font-family:'Press Start 2P',monospace;
+  font-size:8px;
+  padding:12px 16px;
+  cursor:pointer;
+  border-left:3px solid transparent;
+  transition:all 0.2s;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:var(--text-dim);
+}
+.nav-item:hover{
+  background:var(--bg-hover);
+  color:var(--text-main);
+  border-left-color:var(--border-bright);
+}
+.nav-item.active{
+  background:var(--bg-hover);
+  color:var(--accent-gold);
+  border-left-color:var(--accent-gold);
+}
+
+/* ANIMATIONS */
+@keyframes flicker{
+  0%,100%{opacity:1;}
+  92%{opacity:1;}
+  93%{opacity:0.7;}
+  95%{opacity:1;}
+  97%{opacity:0.8;}
+}
+@keyframes float{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-6px);}
+}
+@keyframes scanline{
+  0%{transform:translateY(-100%);}
+  100%{transform:translateY(100vh);}
+}
+@keyframes pulse-gold{
+  0%,100%{box-shadow:var(--glow-gold);}
+  50%{box-shadow:0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 60px #ffd700;}
+}
+@keyframes levelup{
+  0%{transform:scale(1);opacity:1;}
+  50%{transform:scale(1.3);opacity:0.8;}
+  100%{transform:scale(1);opacity:1;}
+}
+@keyframes slideIn{
+  from{transform:translateX(-20px);opacity:0;}
+  to{transform:translateX(0);opacity:1;}
+}
+@keyframes shimmer{
+  0%{background-position:-200% 0;}
+  100%{background-position:200% 0;}
+}
+
+.float-anim{animation:float 3s ease-in-out infinite;}
+.pulse-anim{animation:pulse-gold 2s ease-in-out infinite;}
+.flicker-anim{animation:flicker 4s linear infinite;}
+.slide-in{animation:slideIn 0.3s ease-out;}
+
+/* TIER COLORS */
+.tier1{color:#aaffaa;}
+.tier2{color:#aaaaff;}
+.tier3{color:var(--accent-purple);}
+.tier4{color:var(--accent-gold);}
+
+/* CHARACTER SPRITE (pixel art emoji style) */
+.char-sprite{
+  font-size:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:64px;
+  height:64px;
+  background:var(--bg-hover);
+  border:2px solid var(--border-bright);
+  image-rendering:pixelated;
+}
+
+/* NOTIFICATION DOT */
+.notif-dot{
+  width:10px;height:10px;
+  background:var(--accent-red);
+  border-radius:0;
+  display:inline-block;
+  animation:pulse-gold 1s infinite;
+}
+
+/* MODAL OVERLAY */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.85);
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.modal-box{
+  background:var(--bg-panel);
+  border:3px solid var(--accent-gold);
+  box-shadow:0 0 30px rgba(255,215,0,0.3),8px 8px 0 #000;
+  padding:30px;
+  max-width:600px;
+  width:100%;
+  max-height:90vh;
+  overflow-y:auto;
+  position:relative;
+}
+
+/* SCANLINE EFFECT */
+.scanlines::after{
+  content:'';
+  position:fixed;
+  top:0;left:0;right:0;
+  height:2px;
+  background:rgba(255,255,255,0.03);
+  z-index:9999;
+  pointer-events:none;
+  animation:scanline 8s linear infinite;
+}
+
+/* LEADERBOARD */
+.lb-row{
+  display:flex;align-items:center;
+  padding:10px 15px;
+  border-bottom:1px solid var(--border);
+  transition:background 0.2s;
+  gap:12px;
+}
+.lb-row:hover{background:var(--bg-hover);}
+.lb-rank{
+  font-family:'Press Start 2P',monospace;
+  font-size:12px;
+  width:30px;
+  text-align:center;
+}
+
+/* TASK CARD */
+.task-card{
+  background:var(--bg-card);
+  border:2px solid var(--border);
+  padding:15px;
+  margin-bottom:10px;
+  transition:all 0.2s;
+}
+.task-card.validated{border-color:#00ff88;background:rgba(0,255,136,0.05);}
+.task-card.expired{border-color:#ff4455;opacity:0.6;}
+
+/* INVENTORY SLOT */
+.inv-slot{
+  width:64px;height:64px;
+  background:#0a0a20;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+  font-size:28px;
+}
+.inv-slot:hover{border-color:var(--accent-gold);}
+.inv-slot.empty{opacity:0.3;}
+.inv-slot .qty{
+  position:absolute;bottom:2px;right:4px;
+  font-family:'Press Start 2P',monospace;
+  font-size:8px;
+  color:var(--accent-gold);
+}
+
+/* STAT BAR */
+.stat-row{display:flex;align-items:center;gap:10px;margin:6px 0;}
+.stat-label{
+  font-family:'Press Start 2P',monospace;
+  font-size:8px;
+  width:90px;
+  color:var(--text-dim);
+}
+.stat-val{
+  font-family:'Press Start 2P',monospace;
+  font-size:10px;
+  min-width:50px;
+  text-align:right;
+}
+
+/* COINS DISPLAY */
+.coins{
+  font-family:'Press Start 2P',monospace;
+  font-size:11px;
+  color:var(--accent-gold);
+  display:flex;align-items:center;gap:6px;
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{width:200px!important;}
+  .main-layout{flex-direction:column;}
+}
+
+/* LOGIN SCREEN */
+.login-bg{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(ellipse at 50% 50%, #0a0a30 0%, #000010 70%);
+  position:relative;
+  overflow:hidden;
+}
+.login-bg::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 30px,rgba(0,100,255,0.02) 30px,rgba(0,100,255,0.02) 31px),
+    repeating-linear-gradient(90deg,transparent,transparent 30px,rgba(0,100,255,0.02) 30px,rgba(0,100,255,0.02) 31px);
+  pointer-events:none;
+}
+
+.login-title{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(14px,3vw,22px);
+  color:var(--accent-gold);
+  text-shadow:var(--glow-gold);
+  text-align:center;
+  line-height:1.8;
+  animation:flicker 5s linear infinite;
+}
+
+/* TAG HELPERS */
+.flex{display:flex;}
+.flex-col{display:flex;flex-direction:column;}
+.items-center{align-items:center;}
+.justify-center{justify-content:center;}
+.justify-between{justify-content:space-between;}
+.gap-2{gap:8px;}
+.gap-3{gap:12px;}
+.gap-4{gap:16px;}
+.w-full{width:100%;}
+.text-center{text-align:center;}
+.mb-2{margin-bottom:8px;}
+.mb-3{margin-bottom:12px;}
+.mb-4{margin-bottom:16px;}
+.mt-2{margin-top:8px;}
+.mt-3{margin-top:12px;}
+.mt-4{margin-top:16px;}
+.p-3{padding:12px;}
+.p-4{padding:16px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;}
+.text-gold{color:var(--accent-gold);}
+.text-green{color:var(--accent-green);}
+.text-blue{color:var(--accent-blue);}
+.text-red{color:var(--accent-red);}
+.text-dim{color:var(--text-dim);}
+.text-sm{font-size:14px;}
+.text-xs{font-size:12px;}
+.bold{font-family:'Press Start 2P',monospace;}
+.rounded{border-radius:0;}
+.overflow-auto{overflow:auto;}
+.overflow-hidden{overflow:hidden;}
+.relative{position:relative;}
+.absolute{position:absolute;}
+</style>
+</head>
+<body class="scanlines">
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ============================================================
+// DATA & CONSTANTS
+// ============================================================
+
+const CHARACTERS = [
+  // FUERZA
+  {id:'c1',name:'Guerrero Roca',type:'Fuerza',emoji:'⚔️',color:'#ff6644',desc:'Golpea primero, piensa después',base:{fuerza:10,agilidad:5,inteligencia:3}},
+  {id:'c2',name:'Berserker',type:'Fuerza',emoji:'🪓',color:'#ff4422',desc:'La furia es su escudo',base:{fuerza:12,agilidad:4,inteligencia:2}},
+  {id:'c3',name:'Paladín',type:'Fuerza',emoji:'🛡️',color:'#ffaa44',desc:'Protege a los débiles',base:{fuerza:9,agilidad:5,inteligencia:5}},
+  {id:'c4',name:'Coloso',type:'Fuerza',emoji:'🏔️',color:'#888888',desc:'Inamovible como la roca',base:{fuerza:14,agilidad:2,inteligencia:2}},
+  {id:'c5',name:'Cazador',type:'Fuerza',emoji:'🏹',color:'#88aa44',desc:'El bosque es su hogar',base:{fuerza:8,agilidad:8,inteligencia:3}},
+  // AGILIDAD
+  {id:'c6',name:'Ninja Sombra',type:'Agilidad',emoji:'🌑',color:'#444466',desc:'Rápido como el viento',base:{fuerza:4,agilidad:12,inteligencia:5}},
+  {id:'c7',name:'Ladrón',type:'Agilidad',emoji:'🗡️',color:'#664422',desc:'Nadie lo ve venir',base:{fuerza:5,agilidad:11,inteligencia:6}},
+  {id:'c8',name:'Bailarín de Tormenta',type:'Agilidad',emoji:'⚡',color:'#ffff44',desc:'Danza entre los rayos',base:{fuerza:3,agilidad:14,inteligencia:4}},
+  {id:'c9',name:'Explorador',type:'Agilidad',emoji:'🧭',color:'#44aa88',desc:'Descubre lo desconocido',base:{fuerza:6,agilidad:10,inteligencia:6}},
+  {id:'c10',name:'Acróbata',type:'Agilidad',emoji:'🎭',color:'#ff88aa',desc:'El peligro es su juego',base:{fuerza:5,agilidad:13,inteligencia:4}},
+  // INTELIGENCIA
+  {id:'c11',name:'Archimago',type:'Inteligencia',emoji:'🔮',color:'#aa44ff',desc:'El conocimiento es poder',base:{fuerza:2,agilidad:4,inteligencia:13}},
+  {id:'c12',name:'Alquimista',type:'Inteligencia',emoji:'⚗️',color:'#44ffaa',desc:'Transforma lo imposible',base:{fuerza:4,agilidad:5,inteligencia:12}},
+  {id:'c13',name:'Cronista',type:'Inteligencia',emoji:'📜',color:'#ffffaa',desc:'Sabe todo lo que pasó',base:{fuerza:3,agilidad:6,inteligencia:12}},
+  {id:'c14',name:'Oráculo',type:'Inteligencia',emoji:'🌟',color:'#ffffff',desc:'Ve el futuro en las estrellas',base:{fuerza:2,agilidad:5,inteligencia:14}},
+  {id:'c15',name:'Inventor',type:'Inteligencia',emoji:'⚙️',color:'#aaaaaa',desc:'Crea lo que no existe',base:{fuerza:5,agilidad:5,inteligencia:11}},
+];
+
+const DEFAULT_ITEMS = [
+  {id:'i1',emoji:'🍎',name:'Manzana Mágica',desc:'Restaura energía al instante',price:5,mode:'single',category:'consumible'},
+  {id:'i2',emoji:'🗡️',name:'Espada Corta',desc:'Arma básica de aventurero',price:15,mode:'multiple',category:'arma'},
+  {id:'i3',emoji:'🛡️',name:'Escudo Rústico',desc:'Protección elemental',price:12,mode:'multiple',category:'armadura'},
+  {id:'i4',emoji:'📚',name:'Tomo de Saberes',desc:'Acceso prioritario biblioteca',price:20,mode:'single',category:'beneficio'},
+  {id:'i5',emoji:'🔮',name:'Cristal de Visión',desc:'Revela secretos ocultos',price:25,mode:'single',category:'objeto'},
+  {id:'i6',emoji:'⚗️',name:'Poción de XP',desc:'Doble XP por 1 hora',price:30,mode:'single',category:'consumible'},
+  {id:'i7',emoji:'🌟',name:'Estrella de Logro',desc:'Insignia de honor',price:50,mode:'none',category:'cosmético'},
+  {id:'i8',emoji:'🎭',name:'Máscara Épica',desc:'Cosmético exclusivo',price:40,mode:'none',category:'cosmético'},
+  {id:'i9',emoji:'🏆',name:'Copa de Campeón',desc:'Símbolo de victoria',price:100,mode:'none',category:'cosmético'},
+  {id:'i10',emoji:'⚡',name:'Runa de Velocidad',desc:'Aumenta agilidad temporalmente',price:18,mode:'single',category:'objeto'},
+  {id:'i11',emoji:'🔥',name:'Esencia de Fuego',desc:'Ataque de área',price:22,mode:'single',category:'consumible'},
+  {id:'i12',emoji:'❄️',name:'Cristal Helado',desc:'Congela al enemigo',price:22,mode:'single',category:'objeto'},
+  {id:'i13',emoji:'🌿',name:'Hierba Sagrada',desc:'Cura estados negativos',price:8,mode:'single',category:'consumible'},
+  {id:'i14',emoji:'💎',name:'Diamante Negro',desc:'Rarísimo, muy valioso',price:200,mode:'none',category:'cosmético'},
+  {id:'i15',emoji:'🎪',name:'Pase de Evento',desc:'Acceso a eventos especiales',price:35,mode:'single',category:'beneficio'},
+  {id:'i16',emoji:'🦋',name:'Alas de Mariposa',desc:'Cosmético: Vuela alto',price:45,mode:'none',category:'cosmético'},
+  {id:'i17',emoji:'🗺️',name:'Mapa Antiguo',desc:'Revela zonas secretas',price:28,mode:'single',category:'objeto'},
+  {id:'i18',emoji:'🎵',name:'Flauta Encantada',desc:'Habilidad social +10',price:16,mode:'multiple',category:'objeto'},
+  {id:'i19',emoji:'🌙',name:'Amuleto Lunar',desc:'Suerte en misiones nocturnas',price:33,mode:'multiple',category:'objeto'},
+  {id:'i20',emoji:'⚓',name:'Ancla de Destino',desc:'Fija tu posición en el mapa',price:55,mode:'none',category:'objeto'},
+  {id:'i21',emoji:'🧲',name:'Imán de Monedas',desc:'Atrae AMZ V extra',price:60,mode:'single',category:'beneficio'},
+  {id:'i22',emoji:'🎯',name:'Dardo Certero',desc:'Nunca falla',price:20,mode:'multiple',category:'arma'},
+  {id:'i23',emoji:'🌊',name:'Esencia del Mar',desc:'Respira bajo el agua',price:25,mode:'single',category:'objeto'},
+  {id:'i24',emoji:'🐉',name:'Escama de Dragón',desc:'Armadura épica definitiva',price:150,mode:'multiple',category:'armadura'},
+  {id:'i25',emoji:'🕯️',name:'Vela Eterna',desc:'Ilumina caminos oscuros',price:10,mode:'multiple',category:'objeto'},
+  {id:'i26',emoji:'🧸',name:'Guardián de Peluche',desc:'Mascota cosmética',price:38,mode:'none',category:'cosmético'},
+  {id:'i27',emoji:'🔑',name:'Llave Maestra',desc:'Abre puertas bloqueadas',price:42,mode:'single',category:'beneficio'},
+  {id:'i28',emoji:'💌',name:'Carta de Favor',desc:'Solicita un favor al profe',price:80,mode:'single',category:'beneficio'},
+  {id:'i29',emoji:'🌈',name:'Pincel Arcoíris',desc:'Personaliza tu avatar',price:55,mode:'single',category:'cosmético'},
+  {id:'i30',emoji:'👑',name:'Corona Real',desc:'Demuestra tu dominio total',price:500,mode:'none',category:'cosmético'},
+];
+
+const DEFAULT_BAGS = [
+  {id:'b1',name:'Mochila de Aventurero',emoji:'🎒',slots:5,price:0,level:1},
+  {id:'b2',name:'Mochila de Héroe',emoji:'🧳',slots:10,price:100,level:2},
+  {id:'b3',name:'Mochila Legendaria',emoji:'💼',slots:15,price:250,level:3},
+];
+
+const XP_FOR_LEVEL = (lvl) => Math.floor(100 * Math.pow(lvl, 1.5));
+
+const getTier = (lvl) => {
+  if(lvl>=100) return {tier:4,label:'TIER IV — LEYENDA',color:'#ffd700',glow:'var(--glow-gold)'};
+  if(lvl>=61) return {tier:3,label:'TIER III — MAESTRO',color:'#aa44ff',glow:'var(--glow-purple)'};
+  if(lvl>=21) return {tier:2,label:'TIER II — HÉROE',color:'#00aaff',glow:'var(--glow-blue)'};
+  return {tier:1,label:'TIER I — AVENTURERO',color:'#aaffaa',glow:'var(--glow-green)'};
+};
+
+const getTierBenefits = (tier) => {
+  const b = {
+    1:['Cosméticos desbloqueados','Insignias especiales','Títulos de rango'],
+    2:['Acceso prioritario a biblioteca','Beneficios escolares','Tareas prioritarias'],
+    3:['Selección de asiento','Control del entorno escolar','Privilegios de maestro'],
+    4:['⭐ Receso Premium (+5 min)','Prioridad en todas las filas','Estatus LEYENDA'],
+  };
+  return b[tier]||[];
+};
+
+// ============================================================
+// STORAGE HELPERS
+// ============================================================
+const LS = {
+  get:(k)=>{try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.error(e);}},
+  del:(k)=>localStorage.removeItem(k),
+};
+
+// ============================================================
+// INIT DATA
+// ============================================================
+function initStorage(){
+  if(!LS.get('amz_initialized')){
+    const admin={
+      id:'admin_0',role:'admin',
+      username:'adminamazonica',password:'adminamazonica123',
+      name:'Administrador',emoji:'👑',image:null,
+    };
+    LS.set('amz_users',[admin]);
+    LS.set('amz_students',[]);
+    LS.set('amz_teachers',[]);
+    LS.set('amz_items', DEFAULT_ITEMS);
+    LS.set('amz_tasks',[]);
+    LS.set('amz_notifications',[]);
+    LS.set('amz_initialized',true);
+  }
+}
+
+// ============================================================
+// UTIL COMPONENTS
+// ============================================================
+function PixelAvatar({user,size=48}){
+  if(user?.image){
+    return <img src={user.image} alt="avatar" style={{width:size,height:size,objectFit:'cover',border:'2px solid var(--border-bright)',imageRendering:'pixelated'}}/>;
+  }
+  const char = user?.character ? CHARACTERS.find(c=>c.id===user.character) : null;
+  return (
+    <div style={{width:size,height:size,background:'var(--bg-hover)',border:'2px solid var(--border-bright)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.5}}>
+      {char?char.emoji:(user?.role==='admin'?'👑':user?.role==='teacher'?'🎓':'⚔️')}
+    </div>
+  );
+}
+
+function XPBar({current,total,level}){
+  const pct = Math.min(100,(current/total)*100);
+  return(
+    <div>
+      <div className="flex justify-between text-xs text-dim mb-2">
+        <span style={{fontFamily:'Press Start 2P',fontSize:'8px'}}>NVL {level}</span>
+        <span style={{fontFamily:'Press Start 2P',fontSize:'7px'}}>{Math.floor(current)}/{total} XP</span>
+      </div>
+      <div className="progress-bar-wrap progress-xp">
+        <div className="progress-bar-fill" style={{width:pct+'%'}}/>
+      </div>
+    </div>
+  );
+}
+
+function CoinsDisplay({amount}){
+  return(
+    <div className="coins">
+      <span>🪙</span>
+      <span>{Math.floor(amount)}</span>
+      <span style={{fontSize:'10px',color:'var(--text-dim)'}}>AMZ V</span>
+    </div>
+  );
+}
+
+function Modal({title,onClose,children}){
+  return(
+    <div className="modal-overlay" onClick={(e)=>{if(e.target.className==='modal-overlay')onClose();}}>
+      <div className="modal-box slide-in">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="title-gold" style={{fontSize:'12px'}}>{title}</h2>
+          <button className="btn btn-red btn-xs" onClick={onClose}>✕ CERRAR</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Toast({msg,type,onDone}){
+  useEffect(()=>{
+    const t=setTimeout(onDone,3000);
+    return()=>clearTimeout(t);
+  },[]);
+  const colors={success:'var(--accent-green)',error:'var(--accent-red)',info:'var(--accent-blue)',gold:'var(--accent-gold)'};
+  return(
+    <div style={{
+      position:'fixed',bottom:'20px',right:'20px',zIndex:9999,
+      background:'var(--bg-panel)',border:`3px solid ${colors[type]||colors.info}`,
+      padding:'15px 20px',maxWidth:'350px',
+      boxShadow:`0 0 20px ${colors[type]||colors.info}`,
+      fontFamily:'Press Start 2P',fontSize:'9px',
+      animation:'slideIn 0.3s ease-out',
+    }}>
+      {type==='success'&&'✅ '}{type==='error'&&'❌ '}{type==='gold'&&'🪙 '}{type==='info'&&'ℹ️ '}
+      {msg}
+    </div>
+  );
+}
+
+// ============================================================
+// LOGIN SCREEN
+// ============================================================
+function LoginScreen({onLogin}){
+  const [user,setUser]=useState('');
+  const [pass,setPass]=useState('');
+  const [err,setErr]=useState('');
+  const [loading,setLoading]=useState(false);
+
+  const handleLogin=()=>{
+    setLoading(true);setErr('');
+    setTimeout(()=>{
+      const users=LS.get('amz_users')||[];
+      const found=users.find(u=>u.username===user&&u.password===pass);
+      if(found){
+        LS.set('amz_session',found.id);
+        onLogin(found);
+      } else {
+        setErr('Usuario o contraseña incorrectos');
+        setLoading(false);
+      }
+    },600);
+  };
+
+  return(
+    <div className="login-bg">
+      <div style={{width:'100%',maxWidth:'480px',padding:'20px'}}>
+        {/* Logo */}
+        <div className="text-center mb-4">
+          <div className="float-anim" style={{fontSize:'80px',display:'block',marginBottom:'10px'}}>🏰</div>
+          <div className="login-title">AMAZÓNICA<br/>⚔️ RPG ⚔️</div>
+          <div style={{fontFamily:'VT323',fontSize:'22px',color:'var(--text-dim)',marginTop:'8px'}}>
+            Sistema de Recompensas Escolar
+          </div>
+        </div>
+
+        {/* Decorative border */}
+        <div style={{
+          padding:'2px',
+          background:'linear-gradient(135deg,var(--accent-gold),transparent,var(--accent-purple),transparent,var(--accent-gold))',
+          marginBottom:'4px',
+        }}>
+        <div className="pixel-panel" style={{background:'rgba(10,10,30,0.95)'}}>
+          <div style={{fontFamily:'Press Start 2P',fontSize:'10px',color:'var(--accent-blue)',marginBottom:'20px',textAlign:'center'}}>
+            ▶ INICIAR SESIÓN
+          </div>
+          
+          <div className="mb-3">
+            <label style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--text-dim)',display:'block',marginBottom:'8px'}}>
+              USUARIO
+            </label>
+            <input className="pixel-input" placeholder="ingresa tu usuario..."
+              value={user} onChange={e=>setUser(e.target.value)}
+              onKeyDown={e=>e.key==='Enter'&&handleLogin()}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--text-dim)',display:'block',marginBottom:'8px'}}>
+              CONTRASEÑA
+            </label>
+            <input className="pixel-input" type="password" placeholder="ingresa tu contraseña..."
+              value={pass} onChange={e=>setPass(e.target.value)}
+              onKeyDown={e=>e.key==='Enter'&&handleLogin()}
+            />
+          </div>
+
+          {err&&<div style={{color:'var(--accent-red)',fontFamily:'Press Start 2P',fontSize:'8px',marginBottom:'15px',textAlign:'center'}}>⚠ {err}</div>}
+
+          <button className="btn btn-gold w-full" style={{width:'100%',padding:'14px',fontSize:'10px'}}
+            onClick={handleLogin} disabled={loading}>
+            {loading?'CARGANDO...':'⚔️ ENTRAR AL MUNDO'}
+          </button>
+        </div>
+        </div>
+
+        <div style={{textAlign:'center',marginTop:'20px',color:'var(--text-dim)',fontFamily:'VT323',fontSize:'16px'}}>
+          Contacta al Administrador para obtener acceso
+        </div>
+
+        {/* Pixel art footer decoration */}
+        <div style={{textAlign:'center',marginTop:'30px',fontSize:'24px',opacity:0.4}}>
+          ░░░░░░░░░░░░░░░░░░░░
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// CHARACTER SELECTION
+// ============================================================
+function CharacterSelect({user,onSelect}){
+  const [selected,setSelected]=useState(null);
+  const [filter,setFilter]=useState('all');
+
+  const filtered = filter==='all' ? CHARACTERS : CHARACTERS.filter(c=>c.type===filter);
+
+  return(
+    <div style={{minHeight:'100vh',background:'var(--bg-dark)',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}}>
+      <div style={{maxWidth:'900px',width:'100%'}}>
+        <div className="text-center mb-4">
+          <div style={{fontSize:'50px',marginBottom:'10px'}}>⚔️</div>
+          <h1 className="title-gold" style={{fontSize:'16px',marginBottom:'8px'}}>¡ELIGE TU PERSONAJE!</h1>
+          <p style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'20px'}}>Hola {user.name}, esta es tu clase de combate</p>
+        </div>
+
+        {/* Filtros */}
+        <div className="flex gap-2 justify-center mb-4">
+          {['all','Fuerza','Agilidad','Inteligencia'].map(f=>(
+            <button key={f} className={`btn btn-sm ${filter===f?'btn-gold':'btn-dark'}`}
+              onClick={()=>setFilter(f)}>
+              {f==='all'?'TODOS':f==='Fuerza'?'⚔️ FUERZA':f==='Agilidad'?'💨 AGILIDAD':'🔮 INT'}
+            </button>
+          ))}
+        </div>
+
+        {/* Characters grid */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:'12px',marginBottom:'20px'}}>
+          {filtered.map(c=>(
+            <div key={c.id}
+              className="pixel-card"
+              style={{
+                cursor:'pointer',
+                border:selected?.id===c.id?`3px solid ${c.color}`:'2px solid var(--border)',
+                boxShadow:selected?.id===c.id?`0 0 15px ${c.color}`:'none',
+                transform:selected?.id===c.id?'scale(1.05)':'scale(1)',
+              }}
+              onClick={()=>setSelected(c)}
+            >
+              <div style={{fontSize:'40px',textAlign:'center',marginBottom:'8px'}}>{c.emoji}</div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:c.color,textAlign:'center',marginBottom:'4px'}}>{c.name}</div>
+              <div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)',textAlign:'center',marginBottom:'8px'}}>{c.desc}</div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'#aaaaaa',textAlign:'center'}}>{c.type}</div>
+              <div style={{marginTop:'8px',display:'flex',justifyContent:'space-around',fontSize:'11px'}}>
+                <span style={{color:'#ff6644'}}>⚔{c.base.fuerza}</span>
+                <span style={{color:'#44aaff'}}>💨{c.base.agilidad}</span>
+                <span style={{color:'#aa44ff'}}>🔮{c.base.inteligencia}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {selected&&(
+          <div className="text-center">
+            <div style={{fontFamily:'VT323',fontSize:'22px',color:'var(--accent-gold)',marginBottom:'15px'}}>
+              Has elegido: <span style={{color:selected.color}}>{selected.emoji} {selected.name}</span>
+            </div>
+            <button className="btn btn-gold" style={{fontSize:'12px',padding:'15px 40px'}}
+              onClick={()=>onSelect(selected)}>
+              ⚔️ ¡COMENZAR AVENTURA!
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+export default function App(){
+  const [currentUser,setCurrentUser]=useState(null);
+  const [toast,setToast]=useState(null);
+  const [view,setView]=useState('dashboard');
+
+  useEffect(()=>{
+    initStorage();
+    const sid=LS.get('amz_session');
+    if(sid){
+      const users=LS.get('amz_users')||[];
+      const u=users.find(x=>x.id===sid);
+      if(u) setCurrentUser(u);
+    }
+  },[]);
+
+  const showToast=(msg,type='info')=>{
+    setToast({msg,type,id:Date.now()});
+  };
+
+  const handleLogin=(user)=>{
+    setCurrentUser(user);
+    setView('dashboard');
+  };
+
+  const handleLogout=()=>{
+    LS.del('amz_session');
+    setCurrentUser(null);
+    setView('dashboard');
+  };
+
+  const refreshUser=()=>{
+    const users=LS.get('amz_users')||[];
+    const u=users.find(x=>x.id===currentUser.id);
+    if(u) setCurrentUser(u);
+  };
+
+  if(!currentUser) return(
+    <>
+      <LoginScreen onLogin={handleLogin}/>
+      {toast&&<Toast key={toast.id} msg={toast.msg} type={toast.type} onDone={()=>setToast(null)}/>}
+    </>
+  );
+
+  // Check character selection for students
+  if(currentUser.role==='student'&&!currentUser.character){
+    const handleCharSelect=(char)=>{
+      const users=LS.get('amz_users')||[];
+      const idx=users.findIndex(u=>u.id===currentUser.id);
+      if(idx>=0){
+        users[idx].character=char.id;
+        users[idx].stats={fuerza:char.base.fuerza,agilidad:char.base.agilidad,inteligencia:char.base.inteligencia};
+        users[idx].xp=0;
+        users[idx].level=1;
+        users[idx].coins=0;
+        users[idx].inventory=[];
+        users[idx].bag=null;
+        users[idx].tasksCompleted=0;
+        LS.set('amz_users',users);
+        setCurrentUser(users[idx]);
+      }
+    };
+    return <CharacterSelect user={currentUser} onSelect={handleCharSelect}/>;
+  }
+
+  return(
+    <>
+      {currentUser.role==='admin'&&<AdminDashboard user={currentUser} onLogout={handleLogout} showToast={showToast} refreshUser={refreshUser} view={view} setView={setView}/>}
+      {currentUser.role==='teacher'&&<TeacherDashboard user={currentUser} onLogout={handleLogout} showToast={showToast} refreshUser={refreshUser} view={view} setView={setView}/>}
+      {currentUser.role==='student'&&<StudentDashboard user={currentUser} onLogout={handleLogout} showToast={showToast} refreshUser={refreshUser} view={view} setView={setView}/>}
+      {toast&&<Toast key={toast.id} msg={toast.msg} type={toast.type} onDone={()=>setToast(null)}/>}
+    </>
+  );
+}
+
+// ============================================================
+// LAYOUT WRAPPER
+// ============================================================
+function AppLayout({user,nav,onLogout,children,notifCount=0}){
+  const tier=getTier(user.level||1);
+  const xpNeeded=XP_FOR_LEVEL(user.level||1);
+  return(
+    <div style={{display:'flex',minHeight:'100vh'}}>
+      {/* SIDEBAR */}
+      <div style={{width:'220px',minWidth:'220px',background:'var(--bg-panel)',borderRight:'2px solid var(--border)',display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        {/* Header */}
+        <div style={{padding:'20px 15px',borderBottom:'2px solid var(--border)',background:'rgba(0,0,0,0.3)'}}>
+          <div className="flex items-center gap-2 mb-3">
+            <PixelAvatar user={user} size={44}/>
+            <div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--text-main)'}}>{user.name}</div>
+              <div style={{fontFamily:'VT323',fontSize:'14px',color:tier.color,marginTop:'2px'}}>{tier.label.split('—')[0].trim()}</div>
+            </div>
+          </div>
+          {user.role==='student'&&(
+            <>
+              <XPBar current={user.xp||0} total={xpNeeded} level={user.level||1}/>
+              <div className="mt-2" style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <CoinsDisplay amount={user.coins||0}/>
+                <div style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)'}}>
+                  {user.bag?'🎒':'❌'}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+        {/* NAV */}
+        <div style={{flex:1,overflowY:'auto',padding:'10px 0'}}>
+          {nav.map(item=>(
+            <div key={item.id} className={`nav-item ${item.active?'active':''}`} onClick={item.onClick}>
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+              {item.badge>0&&<span style={{marginLeft:'auto',background:'var(--accent-red)',color:'#fff',fontFamily:'Press Start 2P',fontSize:'7px',padding:'2px 5px'}}>{item.badge}</span>}
+            </div>
+          ))}
+        </div>
+        {/* Logout */}
+        <div style={{padding:'15px',borderTop:'2px solid var(--border)'}}>
+          <button className="btn btn-red btn-sm w-full" style={{width:'100%'}} onClick={onLogout}>
+            🚪 SALIR
+          </button>
+          <div style={{textAlign:'center',marginTop:'8px',fontFamily:'VT323',fontSize:'13px',color:'var(--text-dim)'}}>
+            v1.0 — AMZ RPG
+          </div>
+        </div>
+      </div>
+      {/* MAIN */}
+      <div style={{flex:1,overflowY:'auto',padding:'20px',background:'var(--bg-dark)'}}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ADMIN DASHBOARD
+// ============================================================
+function AdminDashboard({user,onLogout,showToast,refreshUser,view,setView}){
+  const nav=[
+    {id:'dashboard',icon:'🏠',label:'PANEL',active:view==='dashboard',onClick:()=>setView('dashboard')},
+    {id:'users',icon:'👥',label:'USUARIOS',active:view==='users',onClick:()=>setView('users')},
+    {id:'items',icon:'🎒',label:'CATÁLOGO',active:view==='items',onClick:()=>setView('items')},
+    {id:'economy',icon:'🪙',label:'ECONOMÍA',active:view==='economy',onClick:()=>setView('economy')},
+    {id:'tasks',icon:'📋',label:'TAREAS',active:view==='tasks',onClick:()=>setView('tasks')},
+    {id:'leaderboard',icon:'🏆',label:'RANKING',active:view==='leaderboard',onClick:()=>setView('leaderboard')},
+    {id:'profile',icon:'👑',label:'PERFIL',active:view==='profile',onClick:()=>setView('profile')},
+  ];
+
+  const students=LS.get('amz_students')||[];
+  const teachers=LS.get('amz_teachers')||[];
+
+  return(
+    <AppLayout user={user} nav={nav} onLogout={onLogout}>
+      {view==='dashboard'&&<AdminHome students={students} teachers={teachers} showToast={showToast}/>}
+      {view==='users'&&<AdminUsers user={user} showToast={showToast} refreshUser={refreshUser}/>}
+      {view==='items'&&<AdminItems showToast={showToast}/>}
+      {view==='economy'&&<AdminEconomy showToast={showToast}/>}
+      {view==='tasks'&&<AdminTasks showToast={showToast}/>}
+      {view==='leaderboard'&&<Leaderboard/>}
+      {view==='profile'&&<AdminProfile user={user} showToast={showToast} refreshUser={refreshUser}/>}
+    </AppLayout>
+  );
+}
+
+function AdminHome({students,teachers,showToast}){
+  const tasks=(LS.get('amz_tasks')||[]).filter(t=>!isTaskExpired(t));
+  const users=LS.get('amz_users')||[];
+  const allStudents=users.filter(u=>u.role==='student');
+  const totalCoins=allStudents.reduce((a,s)=>a+(s.coins||0),0);
+
+  return(
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <span style={{fontSize:'32px'}}>👑</span>
+        <div>
+          <h1 className="title-gold" style={{fontSize:'16px'}}>PANEL MAESTRO</h1>
+          <div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'18px'}}>Control total del reino</div>
+        </div>
+      </div>
+
+      <div className="grid-3 mb-4">
+        <StatCard icon="🎓" label="PROFESORES" value={teachers.length} color="var(--accent-blue)"/>
+        <StatCard icon="⚔️" label="ESTUDIANTES" value={allStudents.length} color="var(--accent-green)"/>
+        <StatCard icon="📋" label="TAREAS ACTIVAS" value={tasks.length} color="var(--accent-purple)"/>
+      </div>
+      <div className="grid-2 mb-4">
+        <StatCard icon="🪙" label="AMZ V EN CIRCULACIÓN" value={totalCoins} color="var(--accent-gold)"/>
+        <StatCard icon="👥" label="USUARIOS TOTALES" value={(LS.get('amz_users')||[]).length} color="var(--accent-orange)"/>
+      </div>
+
+      <div className="pixel-panel">
+        <h3 className="title-blue" style={{fontSize:'10px',marginBottom:'15px'}}>🏆 TOP ESTUDIANTES</h3>
+        {allStudents.sort((a,b)=>(b.level||1)-(a.level||1)).slice(0,5).map((s,i)=>(
+          <div key={s.id} className="flex items-center gap-3 mb-3">
+            <span style={{fontFamily:'Press Start 2P',fontSize:'12px',color:'var(--accent-gold)',width:'20px'}}>#{i+1}</span>
+            <PixelAvatar user={s} size={32}/>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'8px'}}>{s.name}</div>
+              <div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)'}}>Nivel {s.level||1} • {s.tasksCompleted||0} tareas</div>
+            </div>
+            <CoinsDisplay amount={s.coins||0}/>
+          </div>
+        ))}
+        {allStudents.length===0&&<div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'18px',textAlign:'center'}}>Sin estudiantes registrados</div>}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({icon,label,value,color}){
+  return(
+    <div className="pixel-card" style={{textAlign:'center'}}>
+      <div style={{fontSize:'30px',marginBottom:'8px'}}>{icon}</div>
+      <div style={{fontFamily:'Press Start 2P',fontSize:'18px',color,marginBottom:'5px'}}>{value}</div>
+      <div style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)'}}>{label}</div>
+    </div>
+  );
+}
+
+// ============================================================
+// ADMIN: USERS
+// ============================================================
+function AdminUsers({user,showToast,refreshUser}){
+  const [tab,setTab]=useState('students');
+  const [modal,setModal]=useState(null);
+  const [form,setForm]=useState({name:'',username:'',password:'',course:''});
+  const [editId,setEditId]=useState(null);
+
+  const users=LS.get('amz_users')||[];
+  const students=users.filter(u=>u.role==='student');
+  const teachers=users.filter(u=>u.role==='teacher');
+
+  const saveUser=(role)=>{
+    if(!form.name||!form.username||!form.password){showToast('Completa todos los campos','error');return;}
+    const allUsers=LS.get('amz_users')||[];
+    
+    if(editId){
+      const idx=allUsers.findIndex(u=>u.id===editId);
+      if(idx>=0){
+        allUsers[idx]={...allUsers[idx],...form};
+        if(role==='student'){
+          const sIdx=(LS.get('amz_students')||[]).findIndex(s=>s.id===editId);
+          const st=LS.get('amz_students')||[];
+          if(sIdx>=0){st[sIdx]={...st[sIdx],...form};LS.set('amz_students',st);}
+        }
+        if(role==='teacher'){
+          const tArr=LS.get('amz_teachers')||[];
+          const tIdx=tArr.findIndex(t=>t.id===editId);
+          if(tIdx>=0){tArr[tIdx]={...tArr[tIdx],...form};LS.set('amz_teachers',tArr);}
+        }
+      }
+      LS.set('amz_users',allUsers);
+      showToast('Usuario actualizado','success');
+    } else {
+      if(allUsers.find(u=>u.username===form.username)){showToast('Usuario ya existe','error');return;}
+      const newUser={
+        id:`${role}_${Date.now()}`,role,
+        name:form.name,username:form.username,password:form.password,
+        course:form.course||'',image:null,
+        ...(role==='student'?{
+          character:null,level:1,xp:0,coins:0,
+          stats:{fuerza:5,agilidad:5,inteligencia:5},
+          inventory:[],bag:null,tasksCompleted:0,
+          tasksValidated:[],
+        }:{courses:form.course?[form.course]:[]}),
+      };
+      allUsers.push(newUser);
+      LS.set('amz_users',allUsers);
+      if(role==='student') LS.set('amz_students',[...(LS.get('amz_students')||[]),newUser]);
+      if(role==='teacher') LS.set('amz_teachers',[...(LS.get('amz_teachers')||[]),newUser]);
+      showToast(`${role==='student'?'Estudiante':'Profesor'} creado exitosamente!`,'success');
+    }
+    setModal(null);setForm({name:'',username:'',password:'',course:''});setEditId(null);
+  };
+
+  const deleteUser=(uid)=>{
+    if(!confirm('¿Eliminar este usuario?'))return;
+    const allUsers=LS.get('amz_users')||[];
+    LS.set('amz_users',allUsers.filter(u=>u.id!==uid));
+    LS.set('amz_students',(LS.get('amz_students')||[]).filter(s=>s.id!==uid));
+    LS.set('amz_teachers',(LS.get('amz_teachers')||[]).filter(t=>t.id!==uid));
+    showToast('Usuario eliminado','info');
+  };
+
+  const openEdit=(u)=>{
+    setEditId(u.id);
+    setForm({name:u.name,username:u.username,password:u.password,course:u.course||''});
+    setModal(u.role);
+  };
+
+  const changeImage=(uid)=>{
+    const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+    inp.onchange=e=>{
+      const file=e.target.files[0];if(!file)return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const allUsers=LS.get('amz_users')||[];
+        const idx=allUsers.findIndex(u=>u.id===uid);
+        if(idx>=0){allUsers[idx].image=ev.target.result;LS.set('amz_users',allUsers);}
+        const st=LS.get('amz_students')||[];
+        const si=st.findIndex(s=>s.id===uid);
+        if(si>=0){st[si].image=ev.target.result;LS.set('amz_students',st);}
+        const te=LS.get('amz_teachers')||[];
+        const ti=te.findIndex(t=>t.id===uid);
+        if(ti>=0){te[ti].image=ev.target.result;LS.set('amz_teachers',te);}
+        showToast('Imagen actualizada','success');
+        refreshUser();
+      };
+      reader.readAsDataURL(file);
+    };
+    inp.click();
+  };
+
+  const list=tab==='students'?students:teachers;
+
+  return(
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="title-gold" style={{fontSize:'14px'}}>👥 GESTIÓN DE USUARIOS</h1>
+        <div className="flex gap-2">
+          <button className="btn btn-green btn-sm" onClick={()=>{setModal('student');setEditId(null);setForm({name:'',username:'',password:'',course:''});}}>+ ESTUDIANTE</button>
+          <button className="btn btn-blue btn-sm" onClick={()=>{setModal('teacher');setEditId(null);setForm({name:'',username:'',password:'',course:''});}}>+ PROFESOR</button>
+        </div>
+      </div>
+
+      <div className="flex gap-2 mb-4">
+        <button className={`btn btn-sm ${tab==='students'?'btn-gold':'btn-dark'}`} onClick={()=>setTab('students')}>⚔️ ESTUDIANTES ({students.length})</button>
+        <button className={`btn btn-sm ${tab==='teachers'?'btn-gold':'btn-dark'}`} onClick={()=>setTab('teachers')}>🎓 PROFESORES ({teachers.length})</button>
+      </div>
+
+      <div className="pixel-panel">
+        {list.length===0?(
+          <div style={{textAlign:'center',color:'var(--text-dim)',fontFamily:'VT323',fontSize:'22px',padding:'30px'}}>
+            Sin {tab==='students'?'estudiantes':'profesores'} registrados
+          </div>
+        ):list.map(u=>(
+          <div key={u.id} className="flex items-center gap-3 mb-3 pixel-card" style={{marginBottom:'8px'}}>
+            <PixelAvatar user={u} size={44}/>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'9px'}}>{u.name}</div>
+              <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--text-dim)'}}>@{u.username} {u.course&&`• ${u.course}`}</div>
+              {u.role==='student'&&<div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--accent-gold)'}}>Nv.{u.level||1} • {u.tasksCompleted||0} tareas • {Math.floor(u.coins||0)} AMZ V</div>}
+            </div>
+            <div className="flex gap-2">
+              <button className="btn btn-dark btn-xs" onClick={()=>changeImage(u.id)}>🖼️</button>
+              <button className="btn btn-blue btn-xs" onClick={()=>openEdit(u)}>✏️</button>
+              <button className="btn btn-red btn-xs" onClick={()=>deleteUser(u.id)}>🗑️</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {modal&&(
+        <Modal title={`${editId?'EDITAR':'CREAR'} ${modal==='student'?'ESTUDIANTE':'PROFESOR'}`} onClose={()=>{setModal(null);setEditId(null);}}>
+          <div className="flex-col gap-3">
+            {[['name','Nombre completo'],['username','Nombre de usuario'],['password','Contraseña'],['course','Curso/Grado']].map(([k,l])=>(
+              <div key={k}>
+                <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'5px'}}>{l}</label>
+                <input className="pixel-input" value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})} placeholder={l}
+                  type={k==='password'?'password':'text'}/>
+              </div>
+            ))}
+            <button className="btn btn-gold" style={{marginTop:'10px'}} onClick={()=>saveUser(modal)}>
+              {editId?'💾 ACTUALIZAR':'➕ CREAR'}
+            </button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// ADMIN: ITEMS
+// ============================================================
+function AdminItems({showToast}){
+  const [items,setItemsState]=useState(LS.get('amz_items')||DEFAULT_ITEMS);
+  const [editing,setEditing]=useState(null);
+  const [form,setForm]=useState({});
+
+  const save=()=>{
+    const all=[...items];
+    const idx=all.findIndex(i=>i.id===editing);
+    if(idx>=0) all[idx]={...all[idx],...form,price:Number(form.price)||0};
+    LS.set('amz_items',all);
+    setItemsState(all);
+    setEditing(null);
+    showToast('Objeto actualizado','success');
+  };
+
+  const changeItemImg=(id)=>{
+    const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+    inp.onchange=e=>{
+      const file=e.target.files[0];if(!file)return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const all=[...items];
+        const idx=all.findIndex(i=>i.id===id);
+        if(idx>=0){all[idx].image=ev.target.result;all[idx].emoji=null;}
+        LS.set('amz_items',all);setItemsState(all);
+        showToast('Imagen cargada','success');
+      };
+      reader.readAsDataURL(file);
+    };inp.click();
+  };
+
+  return(
+    <div>
+      <h1 className="title-gold" style={{fontSize:'14px',marginBottom:'20px'}}>🎒 CATÁLOGO DE OBJETOS</h1>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'12px'}}>
+        {items.map(item=>(
+          <div key={item.id} className="pixel-card">
+            <div style={{fontSize:'36px',textAlign:'center',marginBottom:'8px'}}>
+              {item.image?<img src={item.image} style={{width:50,height:50,objectFit:'cover'}}/>:item.emoji}
+            </div>
+            <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--accent-gold)',marginBottom:'4px'}}>{item.name}</div>
+            <div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)',marginBottom:'6px'}}>{item.desc}</div>
+            <div className="flex justify-between items-center mb-2">
+              <CoinsDisplay amount={item.price}/>
+              <span className={`badge ${item.mode==='single'?'badge-orange':item.mode==='multiple'?'badge-blue':'badge-gray'}`}>
+                {item.mode==='single'?'ÚNICO':item.mode==='multiple'?'MÚLTIPLE':'NO-US'}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <button className="btn btn-dark btn-xs" onClick={()=>changeItemImg(item.id)}>🖼️</button>
+              <button className="btn btn-blue btn-xs" style={{flex:1}} onClick={()=>{setEditing(item.id);setForm({name:item.name,desc:item.desc,price:item.price,mode:item.mode});}}>✏️ EDITAR</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {editing&&(
+        <Modal title="EDITAR OBJETO" onClose={()=>setEditing(null)}>
+          <div className="flex-col gap-3">
+            {[['name','Nombre'],['desc','Descripción'],['price','Precio AMZ V']].map(([k,l])=>(
+              <div key={k}>
+                <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'5px'}}>{l}</label>
+                <input className="pixel-input" value={form[k]||''} onChange={e=>setForm({...form,[k]:e.target.value})} placeholder={l}
+                  type={k==='price'?'number':'text'}/>
+              </div>
+            ))}
+            <div>
+              <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'5px'}}>TIPO DE USO</label>
+              <select className="pixel-select" value={form.mode||'single'} onChange={e=>setForm({...form,mode:e.target.value})}>
+                <option value="single">Uso Único</option>
+                <option value="multiple">Uso Múltiple</option>
+                <option value="none">No Utilizable</option>
+              </select>
+            </div>
+            <button className="btn btn-gold" onClick={save}>💾 GUARDAR</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// ADMIN: ECONOMY
+// ============================================================
+function AdminEconomy({showToast}){
+  const [selected,setSelected]=useState('');
+  const [amount,setAmount]=useState('');
+  const [op,setOp]=useState('add');
+  const users=LS.get('amz_users')||[];
+  const students=users.filter(u=>u.role==='student');
+
+  const apply=()=>{
+    const n=Number(amount);
+    if(!selected||!n||n<=0){showToast('Selecciona estudiante y cantidad válida','error');return;}
+    const all=LS.get('amz_users')||[];
+    const idx=all.findIndex(u=>u.id===selected);
+    if(idx<0)return;
+    const prev=all[idx].coins||0;
+    all[idx].coins=Math.max(0,op==='add'?prev+n:prev-n);
+    LS.set('amz_users',all);
+    const st=LS.get('amz_students')||[];
+    const si=st.findIndex(s=>s.id===selected);
+    if(si>=0){st[si].coins=all[idx].coins;LS.set('amz_students',st);}
+    showToast(`${op==='add'?'+':`-`}${n} AMZ V aplicado`,'gold');
+    setAmount('');
+  };
+
+  return(
+    <div>
+      <h1 className="title-gold" style={{fontSize:'14px',marginBottom:'20px'}}>🪙 GESTIÓN ECONÓMICA</h1>
+      <div className="grid-2">
+        <div className="pixel-panel">
+          <h3 className="title-blue" style={{fontSize:'10px',marginBottom:'15px'}}>TRANSFERIR AMZ V</h3>
+          <div className="mb-3">
+            <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'8px'}}>ESTUDIANTE</label>
+            <select className="pixel-select" value={selected} onChange={e=>setSelected(e.target.value)}>
+              <option value="">Seleccionar...</option>
+              {students.map(s=><option key={s.id} value={s.id}>{s.name} — {Math.floor(s.coins||0)} AMZ V</option>)}
+            </select>
+          </div>
+          <div className="mb-3">
+            <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'8px'}}>OPERACIÓN</label>
+            <div className="flex gap-2">
+              <button className={`btn btn-sm ${op==='add'?'btn-green':'btn-dark'}`} onClick={()=>setOp('add')}>➕ AGREGAR</button>
+              <button className={`btn btn-sm ${op==='sub'?'btn-red':'btn-dark'}`} onClick={()=>setOp('sub')}>➖ QUITAR</button>
+            </div>
+          </div>
+          <div className="mb-3">
+            <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'8px'}}>CANTIDAD AMZ V</label>
+            <input className="pixel-input" type="number" min="1" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0"/>
+          </div>
+          <button className="btn btn-gold" onClick={apply}>⚡ APLICAR</button>
+        </div>
+
+        <div className="pixel-panel">
+          <h3 className="title-green" style={{fontSize:'10px',marginBottom:'15px'}}>BALANCE ESTUDIANTES</h3>
+          <div style={{maxHeight:'350px',overflowY:'auto'}}>
+            {students.sort((a,b)=>(b.coins||0)-(a.coins||0)).map(s=>(
+              <div key={s.id} className="flex items-center justify-between mb-2 pixel-card" style={{padding:'8px'}}>
+                <div>
+                  <div style={{fontFamily:'Press Start 2P',fontSize:'8px'}}>{s.name}</div>
+                  <div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)'}}>Nv.{s.level||1}</div>
+                </div>
+                <CoinsDisplay amount={s.coins||0}/>
+              </div>
+            ))}
+            {students.length===0&&<div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'18px',textAlign:'center'}}>Sin estudiantes</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ADMIN: TASKS VIEW (READ ONLY)
+// ============================================================
+function AdminTasks({showToast}){
+  const tasks=(LS.get('amz_tasks')||[]).filter(t=>!isTaskExpired(t));
+  return(
+    <div>
+      <h1 className="title-gold" style={{fontSize:'14px',marginBottom:'20px'}}>📋 TODAS LAS TAREAS</h1>
+      {tasks.length===0&&<div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'22px',textAlign:'center',padding:'40px'}}>Sin tareas activas</div>}
+      {tasks.map(t=><TaskCardView key={t.id} task={t}/>)}
+    </div>
+  );
+}
+
+// ============================================================
+// ADMIN: PROFILE
+// ============================================================
+function AdminProfile({user,showToast,refreshUser}){
+  const changeImage=()=>{
+    const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+    inp.onchange=e=>{
+      const file=e.target.files[0];if(!file)return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const all=LS.get('amz_users')||[];
+        const idx=all.findIndex(u=>u.id===user.id);
+        if(idx>=0){all[idx].image=ev.target.result;LS.set('amz_users',all);}
+        refreshUser();showToast('Imagen actualizada','success');
+      };
+      reader.readAsDataURL(file);
+    };inp.click();
+  };
+  return(
+    <div style={{maxWidth:'500px'}}>
+      <h1 className="title-gold" style={{fontSize:'14px',marginBottom:'20px'}}>👑 PERFIL ADMINISTRADOR</h1>
+      <div className="pixel-panel text-center">
+        <div style={{marginBottom:'15px'}}>
+          <PixelAvatar user={user} size={80}/>
+        </div>
+        <div style={{fontFamily:'Press Start 2P',fontSize:'12px',color:'var(--accent-gold)',marginBottom:'5px'}}>{user.name}</div>
+        <div style={{fontFamily:'VT323',fontSize:'18px',color:'var(--text-dim)',marginBottom:'20px'}}>@{user.username}</div>
+        <span className="badge badge-gold">ADMINISTRADOR SUPREMO</span>
+        <div className="mt-4">
+          <button className="btn btn-blue btn-sm" onClick={changeImage}>🖼️ CAMBIAR IMAGEN</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// TEACHER DASHBOARD
+// ============================================================
+function TeacherDashboard({user,onLogout,showToast,refreshUser,view,setView}){
+  const notifs=(LS.get('amz_notifications')||[]).filter(n=>n.teacherId===user.id&&!n.read).length;
+  const nav=[
+    {id:'dashboard',icon:'🏠',label:'PANEL',active:view==='dashboard',onClick:()=>setView('dashboard')},
+    {id:'tasks',icon:'📋',label:'TAREAS',active:view==='tasks',onClick:()=>setView('tasks')},
+    {id:'validate',icon:'✅',label:'VALIDAR',active:view==='validate',onClick:()=>setView('validate')},
+    {id:'notifs',icon:'🔔',label:'NOTIF.',active:view==='notifs',onClick:()=>setView('notifs'),badge:notifs},
+    {id:'leaderboard',icon:'🏆',label:'RANKING',active:view==='leaderboard',onClick:()=>setView('leaderboard')},
+    {id:'profile',icon:'🎓',label:'PERFIL',active:view==='profile',onClick:()=>setView('profile')},
+  ];
+  return(
+    <AppLayout user={user} nav={nav} onLogout={onLogout} notifCount={notifs}>
+      {view==='dashboard'&&<TeacherHome user={user}/>}
+      {view==='tasks'&&<TeacherTasks user={user} showToast={showToast}/>}
+      {view==='validate'&&<TeacherValidate user={user} showToast={showToast}/>}
+      {view==='notifs'&&<TeacherNotifs user={user} showToast={showToast}/>}
+      {view==='leaderboard'&&<Leaderboard/>}
+      {view==='profile'&&<TeacherProfile user={user} showToast={showToast} refreshUser={refreshUser}/>}
+    </AppLayout>
+  );
+}
+
+function TeacherHome({user}){
+  const myTasks=(LS.get('amz_tasks')||[]).filter(t=>t.teacherId===user.id&&!isTaskExpired(t));
+  const users=LS.get('amz_users')||[];
+  const students=users.filter(u=>u.role==='student');
+  const notifs=(LS.get('amz_notifications')||[]).filter(n=>n.teacherId===user.id&&!n.read).length;
+  return(
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <PixelAvatar user={user} size={48}/>
+        <div>
+          <h1 className="title-blue" style={{fontSize:'14px'}}>BIENVENIDO, PROFESOR</h1>
+          <div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'18px'}}>{user.name}</div>
+        </div>
+      </div>
+      <div className="grid-3 mb-4">
+        <StatCard icon="📋" label="TAREAS ACTIVAS" value={myTasks.length} color="var(--accent-blue)"/>
+        <StatCard icon="⚔️" label="ESTUDIANTES" value={students.length} color="var(--accent-green)"/>
+        <StatCard icon="🔔" label="NOTIFICACIONES" value={notifs} color="var(--accent-red)"/>
+      </div>
+      <div className="pixel-panel">
+        <h3 className="title-gold" style={{fontSize:'10px',marginBottom:'15px'}}>MIS TAREAS RECIENTES</h3>
+        {myTasks.slice(0,3).map(t=><TaskCardView key={t.id} task={t}/>)}
+        {myTasks.length===0&&<div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'18px',textAlign:'center'}}>Aún no has creado tareas</div>}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// TEACHER: TASKS
+// ============================================================
+function TeacherTasks({user,showToast}){
+  const [modal,setModal]=useState(false);
+  const [form,setForm]=useState({title:'',desc:'',type:'global',course:''});
+  const [tasks,setTasksState]=useState(LS.get('amz_tasks')||[]);
+
+  const myTasks=tasks.filter(t=>t.teacherId===user.id&&!isTaskExpired(t));
+
+  const create=()=>{
+    if(!form.title||!form.desc){showToast('Completa título y descripción','error');return;}
+    const t={
+      id:'task_'+Date.now(),
+      title:form.title,desc:form.desc,
+      type:form.type,course:form.course||'',
+      teacherId:user.id,teacherName:user.name,
+      createdAt:Date.now(),
+      expiresAt:form.type==='course'?Date.now()+(7*24*60*60*1000):null,
+      validatedBy:[],
+    };
+    const all=[...(LS.get('amz_tasks')||[]),t];
+    LS.set('amz_tasks',all);
+    setTasksState(all);
+    setModal(false);setForm({title:'',desc:'',type:'global',course:''});
+    showToast('¡Tarea creada exitosamente!','success');
+  };
+
+  const deleteTask=(id)=>{
+    if(!confirm('¿Eliminar esta tarea?'))return;
+    const all=(LS.get('amz_tasks')||[]).filter(t=>t.id!==id);
+    LS.set('amz_tasks',all);setTasksState(all);
+    showToast('Tarea eliminada','info');
+  };
+
+  return(
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="title-blue" style={{fontSize:'14px'}}>📋 MIS TAREAS</h1>
+        <button className="btn btn-gold btn-sm" onClick={()=>setModal(true)}>+ CREAR TAREA</button>
+      </div>
+      {myTasks.length===0&&<div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'22px',textAlign:'center',padding:'40px'}}>No has creado tareas aún</div>}
+      {myTasks.map(t=>(
+        <div key={t.id} className="task-card mb-3">
+          <div className="flex justify-between items-center mb-2">
+            <span style={{fontFamily:'Press Start 2P',fontSize:'9px',color:'var(--accent-gold)'}}>{t.title}</span>
+            <div className="flex gap-2">
+              <span className={`badge ${t.type==='global'?'badge-purple':'badge-blue'}`}>{t.type==='global'?'GLOBAL':'CURSO'}</span>
+              <button className="btn btn-red btn-xs" onClick={()=>deleteTask(t.id)}>🗑️</button>
+            </div>
+          </div>
+          <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--text-dim)',marginBottom:'5px'}}>{t.desc}</div>
+          {t.expiresAt&&<TimeLeft expiresAt={t.expiresAt}/>}
+          <div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--accent-green)',marginTop:'5px'}}>
+            ✅ {t.validatedBy?.length||0} validaciones
+          </div>
+        </div>
+      ))}
+
+      {modal&&(
+        <Modal title="CREAR NUEVA TAREA" onClose={()=>setModal(false)}>
+          <div className="flex-col gap-3">
+            <div>
+              <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'5px'}}>TIPO</label>
+              <div className="flex gap-2">
+                <button className={`btn btn-sm ${form.type==='global'?'btn-purple':'btn-dark'}`} onClick={()=>setForm({...form,type:'global'})}>🌍 GLOBAL</button>
+                <button className={`btn btn-sm ${form.type==='course'?'btn-blue':'btn-dark'}`} onClick={()=>setForm({...form,type:'course'})}>📚 CURSO</button>
+              </div>
+            </div>
+            <div>
+              <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'5px'}}>TÍTULO</label>
+              <input className="pixel-input" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Título de la tarea"/>
+            </div>
+            <div>
+              <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'5px'}}>DESCRIPCIÓN</label>
+              <textarea className="pixel-input" rows={3} value={form.desc} onChange={e=>setForm({...form,desc:e.target.value})} placeholder="Descripción detallada..." style={{resize:'vertical'}}/>
+            </div>
+            {form.type==='course'&&(
+              <div>
+                <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'5px'}}>CURSO/GRADO</label>
+                <input className="pixel-input" value={form.course} onChange={e=>setForm({...form,course:e.target.value})} placeholder="Ej: 3ro A"/>
+              </div>
+            )}
+            <button className="btn btn-gold" onClick={create}>⚡ CREAR TAREA</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// TEACHER: VALIDATE
+// ============================================================
+function TeacherValidate({user,showToast}){
+  const [selectedTask,setSelectedTask]=useState(null);
+  const [selectedStudent,setSelectedStudent]=useState(null);
+  const [rewardType,setRewardType]=useState('basic');
+  const users=LS.get('amz_users')||[];
+  const tasks=(LS.get('amz_tasks')||[]).filter(t=>t.teacherId===user.id&&!isTaskExpired(t));
+  const students=users.filter(u=>u.role==='student');
+
+  // Ordenar estudiantes por actividad
+  const sortedStudents=[...students].sort((a,b)=>{
+    if((b.lastTaskDate||0)!==(a.lastTaskDate||0)) return (b.lastTaskDate||0)-(a.lastTaskDate||0);
+    if((b.tasksCompleted||0)!==(a.tasksCompleted||0)) return (b.tasksCompleted||0)-(a.tasksCompleted||0);
+    return a.name.localeCompare(b.name);
+  });
+
+  const rewardData={
+    basic:{coins:1,xp:80,label:'BÁSICA',color:'var(--accent-green)'},
+    intermediate:{coins:2,xp:160,label:'INTERMEDIA',color:'var(--accent-blue)'},
+    hard:{coins:3,xp:250,label:'DIFÍCIL',color:'var(--accent-purple)'},
+  };
+
+  const validate=()=>{
+    if(!selectedTask||!selectedStudent){showToast('Selecciona tarea y estudiante','error');return;}
+    const task=tasks.find(t=>t.id===selectedTask);
+    const student=students.find(s=>s.id===selectedStudent);
+    if(!task||!student){showToast('Datos inválidos','error');return;}
+
+    // Check already validated this student for this task
+    if(task.validatedBy?.includes(selectedStudent)){
+      showToast('Ya validaste a este estudiante en esta tarea','error');return;
+    }
+
+    const r=rewardData[rewardType];
+    const attrs=['fuerza','agilidad','inteligencia'];
+    const randAttr=attrs[Math.floor(Math.random()*3)];
+
+    // Update task
+    const allTasks=LS.get('amz_tasks')||[];
+    const ti=allTasks.findIndex(t=>t.id===selectedTask);
+    if(ti>=0){
+      if(!allTasks[ti].validatedBy) allTasks[ti].validatedBy=[];
+      allTasks[ti].validatedBy.push(selectedStudent);
+      LS.set('amz_tasks',allTasks);
+    }
+
+    // Update student - mark as pending reward
+    const allUsers=LS.get('amz_users')||[];
+    const si=allUsers.findIndex(u=>u.id===selectedStudent);
+    if(si>=0){
+      if(!allUsers[si].pendingRewards) allUsers[si].pendingRewards=[];
+      allUsers[si].pendingRewards.push({
+        taskId:selectedTask,taskTitle:task.title,
+        coins:r.coins,xp:r.xp,attr:randAttr,attrVal:0.2,
+        validatedAt:Date.now(),
+      });
+      allUsers[si].lastTaskDate=Date.now();
+      LS.set('amz_users',allUsers);
+      const st=LS.get('amz_students')||[];
+      const sst=st.findIndex(s=>s.id===selectedStudent);
+      if(sst>=0){st[sst]=allUsers[si];LS.set('amz_students',st);}
+    }
+
+    showToast(`✅ ${student.name} validado! Recompensa ${r.label} pendiente`,'success');
+    setSelectedStudent(null);
+  };
+
+  return(
+    <div>
+      <h1 className="title-green" style={{fontSize:'14px',marginBottom:'20px'}}>✅ VALIDAR TAREAS</h1>
+      <div className="grid-2">
+        {/* Selección de tarea */}
+        <div className="pixel-panel">
+          <h3 className="title-gold" style={{fontSize:'10px',marginBottom:'15px'}}>1. SELECCIONA TAREA</h3>
+          {tasks.length===0&&<div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'18px'}}>Sin tareas activas</div>}
+          {tasks.map(t=>(
+            <div key={t.id}
+              className="pixel-card mb-2"
+              style={{cursor:'pointer',border:selectedTask===t.id?'2px solid var(--accent-gold)':'2px solid var(--border)',background:selectedTask===t.id?'rgba(255,215,0,0.05)':'var(--bg-card)'}}
+              onClick={()=>setSelectedTask(t.id)}
+            >
+              <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--accent-gold)',marginBottom:'4px'}}>{t.title}</div>
+              <div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)'}}>{t.desc.substring(0,60)}...</div>
+              <div style={{fontFamily:'VT323',fontSize:'13px',color:'var(--accent-green)',marginTop:'4px'}}>✅ {t.validatedBy?.length||0} validados</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex-col gap-4">
+          {/* Tipo de recompensa */}
+          <div className="pixel-panel">
+            <h3 className="title-gold" style={{fontSize:'10px',marginBottom:'15px'}}>2. RECOMPENSA</h3>
+            {Object.entries(rewardData).map(([k,r])=>(
+              <div key={k}
+                className="pixel-card mb-2"
+                style={{cursor:'pointer',border:rewardType===k?`2px solid ${r.color}`:'2px solid var(--border)',background:rewardType===k?`rgba(0,0,0,0.3)`:'var(--bg-card)'}}
+                onClick={()=>setRewardType(k)}
+              >
+                <div className="flex justify-between items-center">
+                  <span style={{fontFamily:'Press Start 2P',fontSize:'8px',color:r.color}}>{r.label}</span>
+                  <span style={{fontFamily:'VT323',fontSize:'16px'}}>🪙{r.coins} + {r.xp}XP</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Selección de estudiante */}
+          <div className="pixel-panel" style={{flex:1}}>
+            <h3 className="title-gold" style={{fontSize:'10px',marginBottom:'15px'}}>3. ESTUDIANTE</h3>
+            <div style={{maxHeight:'250px',overflowY:'auto'}}>
+              {sortedStudents.map(s=>{
+                const task=tasks.find(t=>t.id===selectedTask);
+                const alreadyValidated=task?.validatedBy?.includes(s.id);
+                return(
+                  <div key={s.id}
+                    className="flex items-center gap-2 pixel-card mb-2"
+                    style={{
+                      cursor:alreadyValidated?'not-allowed':'pointer',
+                      border:selectedStudent===s.id?'2px solid var(--accent-green)':alreadyValidated?'2px solid var(--accent-green)':'2px solid var(--border)',
+                      opacity:alreadyValidated?0.6:1,
+                    }}
+                    onClick={()=>{if(!alreadyValidated)setSelectedStudent(s.id);}}
+                  >
+                    <PixelAvatar user={s} size={32}/>
+                    <div style={{flex:1}}>
+                      <div style={{fontFamily:'Press Start 2P',fontSize:'7px'}}>{s.name}</div>
+                      <div style={{fontFamily:'VT323',fontSize:'13px',color:'var(--text-dim)'}}>{s.tasksCompleted||0} tareas</div>
+                    </div>
+                    {alreadyValidated&&<span style={{color:'var(--accent-green)',fontSize:'12px'}}>✅</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {selectedTask&&selectedStudent&&(
+        <div className="pixel-panel mt-4 text-center" style={{borderColor:'var(--accent-gold)'}}>
+          <div style={{fontFamily:'VT323',fontSize:'22px',color:'var(--accent-gold)',marginBottom:'10px'}}>
+            ⚡ Validar "{tasks.find(t=>t.id===selectedTask)?.title}" para {students.find(s=>s.id===selectedStudent)?.name}
+          </div>
+          <button className="btn btn-gold" style={{fontSize:'11px',padding:'14px 30px'}} onClick={validate}>
+            ✅ CONFIRMAR VALIDACIÓN
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// TEACHER: NOTIFS
+// ============================================================
+function TeacherNotifs({user,showToast}){
+  const [notifs,setNotifs]=useState((LS.get('amz_notifications')||[]).filter(n=>n.teacherId===user.id));
+
+  const markRead=(id)=>{
+    const all=LS.get('amz_notifications')||[];
+    const idx=all.findIndex(n=>n.id===id);
+    if(idx>=0){all[idx].read=true;LS.set('amz_notifications',all);}
+    setNotifs(all.filter(n=>n.teacherId===user.id));
+  };
+
+  const markAllRead=()=>{
+    const all=LS.get('amz_notifications')||[];
+    all.forEach(n=>{if(n.teacherId===user.id)n.read=true;});
+    LS.set('amz_notifications',all);
+    setNotifs(all.filter(n=>n.teacherId===user.id));
+    showToast('Todas marcadas como leídas','info');
+  };
+
+  return(
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="title-blue" style={{fontSize:'14px'}}>🔔 NOTIFICACIONES</h1>
+        {notifs.some(n=>!n.read)&&<button className="btn btn-dark btn-sm" onClick={markAllRead}>✓ LEER TODAS</button>}
+      </div>
+      {notifs.length===0&&<div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'22px',textAlign:'center',padding:'40px'}}>Sin notificaciones</div>}
+      {[...notifs].reverse().map(n=>(
+        <div key={n.id} className="pixel-card mb-3" style={{border:n.read?'2px solid var(--border)':`2px solid var(--accent-blue)`,background:n.read?'var(--bg-card)':'rgba(0,170,255,0.05)'}}>
+          <div className="flex justify-between items-center mb-2">
+            <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--accent-blue)'}}>
+              {n.itemEmoji} OBJETO USADO
+            </div>
+            <div className="flex gap-2 items-center">
+              <span style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)'}}>{new Date(n.date).toLocaleString()}</span>
+              {!n.read&&<button className="btn btn-dark btn-xs" onClick={()=>markRead(n.id)}>✓</button>}
+            </div>
+          </div>
+          <div style={{fontFamily:'VT323',fontSize:'18px'}}>
+            <strong style={{color:'var(--accent-gold)'}}>{n.studentName}</strong> usó{' '}
+            <strong style={{color:'var(--accent-purple)'}}>{n.itemName}</strong>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// TEACHER: PROFILE
+// ============================================================
+function TeacherProfile({user,showToast,refreshUser}){
+  const changeImage=()=>{
+    const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+    inp.onchange=e=>{
+      const file=e.target.files[0];if(!file)return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const all=LS.get('amz_users')||[];
+        const idx=all.findIndex(u=>u.id===user.id);
+        if(idx>=0){all[idx].image=ev.target.result;LS.set('amz_users',all);}
+        const te=LS.get('amz_teachers')||[];
+        const ti=te.findIndex(t=>t.id===user.id);
+        if(ti>=0){te[ti].image=ev.target.result;LS.set('amz_teachers',te);}
+        refreshUser();showToast('Imagen actualizada','success');
+      };
+      reader.readAsDataURL(file);
+    };inp.click();
+  };
+  const myTasks=(LS.get('amz_tasks')||[]).filter(t=>t.teacherId===user.id&&!isTaskExpired(t));
+  return(
+    <div style={{maxWidth:'500px'}}>
+      <h1 className="title-blue" style={{fontSize:'14px',marginBottom:'20px'}}>🎓 MI PERFIL</h1>
+      <div className="pixel-panel text-center mb-4">
+        <div style={{marginBottom:'15px'}}><PixelAvatar user={user} size={80}/></div>
+        <div style={{fontFamily:'Press Start 2P',fontSize:'12px',color:'var(--accent-blue)',marginBottom:'5px'}}>{user.name}</div>
+        <div style={{fontFamily:'VT323',fontSize:'18px',color:'var(--text-dim)',marginBottom:'5px'}}>@{user.username}</div>
+        {user.course&&<span className="badge badge-blue">{user.course}</span>}
+        <div className="mt-4"><button className="btn btn-blue btn-sm" onClick={changeImage}>🖼️ CAMBIAR IMAGEN</button></div>
+      </div>
+      <StatCard icon="📋" label="TAREAS ACTIVAS" value={myTasks.length} color="var(--accent-blue)"/>
+    </div>
+  );
+}
+
+// ============================================================
+// STUDENT DASHBOARD
+// ============================================================
+function StudentDashboard({user,onLogout,showToast,refreshUser,view,setView}){
+  const pending=(LS.get('amz_users')||[]).find(u=>u.id===user.id)?.pendingRewards?.length||0;
+  const nav=[
+    {id:'dashboard',icon:'🏠',label:'INICIO',active:view==='dashboard',onClick:()=>setView('dashboard')},
+    {id:'tasks',icon:'📋',label:'TAREAS',active:view==='tasks',onClick:()=>setView('tasks'),badge:pending},
+    {id:'shop',icon:'🛒',label:'TIENDA',active:view==='shop',onClick:()=>setView('shop')},
+    {id:'inventory',icon:'🎒',label:'INVENTARIO',active:view==='inventory',onClick:()=>setView('inventory')},
+    {id:'leaderboard',icon:'🏆',label:'RANKING',active:view==='leaderboard',onClick:()=>setView('leaderboard')},
+    {id:'profile',icon:'⚔️',label:'PERFIL',active:view==='profile',onClick:()=>setView('profile')},
+  ];
+  // Always get fresh user data
+  const freshUser=(LS.get('amz_users')||[]).find(u=>u.id===user.id)||user;
+  return(
+    <AppLayout user={freshUser} nav={nav} onLogout={onLogout}>
+      {view==='dashboard'&&<StudentHome user={freshUser} refreshUser={refreshUser} showToast={showToast}/>}
+      {view==='tasks'&&<StudentTasks user={freshUser} showToast={showToast} refreshUser={refreshUser}/>}
+      {view==='shop'&&<StudentShop user={freshUser} showToast={showToast} refreshUser={refreshUser}/>}
+      {view==='inventory'&&<StudentInventory user={freshUser} showToast={showToast} refreshUser={refreshUser}/>}
+      {view==='leaderboard'&&<Leaderboard/>}
+      {view==='profile'&&<StudentProfile user={freshUser} showToast={showToast} refreshUser={refreshUser}/>}
+    </AppLayout>
+  );
+}
+
+function StudentHome({user,refreshUser,showToast}){
+  const char=CHARACTERS.find(c=>c.id===user.character);
+  const tier=getTier(user.level||1);
+  const xpNeeded=XP_FOR_LEVEL(user.level||1);
+  const tasks=(LS.get('amz_tasks')||[]).filter(t=>!isTaskExpired(t));
+  const globalTasks=tasks.filter(t=>t.type==='global');
+  const courseTasks=tasks.filter(t=>t.type==='course');
+  const pending=user.pendingRewards?.length||0;
+
+  return(
+    <div>
+      {/* Hero Section */}
+      <div className="pixel-panel mb-4" style={{background:'linear-gradient(135deg,#0a0a30,#1a0a3a)',borderColor:tier.color,boxShadow:`0 0 20px ${tier.color}44`}}>
+        <div className="flex items-center gap-4">
+          <div className="float-anim" style={{fontSize:'60px'}}>{char?.emoji||'⚔️'}</div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:tier.color,marginBottom:'5px'}}>{tier.label}</div>
+            <h2 style={{fontFamily:'Press Start 2P',fontSize:'14px',color:'var(--text-main)',marginBottom:'8px'}}>{user.name}</h2>
+            <div style={{fontFamily:'VT323',fontSize:'18px',color:'var(--text-dim)',marginBottom:'10px'}}>{char?.name} • {char?.type}</div>
+            <XPBar current={user.xp||0} total={xpNeeded} level={user.level||1}/>
+          </div>
+          <div style={{textAlign:'right'}}>
+            <CoinsDisplay amount={user.coins||0}/>
+            <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--text-dim)',marginTop:'5px'}}>
+              {user.bag?`🎒 Mochila activa`:'❌ Sin mochila'}
+            </div>
+            {pending>0&&<div style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--accent-gold)',marginTop:'5px',animation:'pulse-gold 1s infinite'}}>⚡ {pending} RECOMPENSAS!</div>}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid-3 mt-4">
+          {[
+            {label:'⚔️ FUERZA',val:user.stats?.fuerza||5,color:'#ff6644'},
+            {label:'💨 AGILIDAD',val:user.stats?.agilidad||5,color:'#44aaff'},
+            {label:'🔮 INTELIGENCIA',val:user.stats?.inteligencia||5,color:'#aa44ff'},
+          ].map(s=>(
+            <div key={s.label} style={{textAlign:'center',background:'rgba(0,0,0,0.3)',padding:'10px',border:'1px solid var(--border)'}}>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:s.color}}>{s.label}</div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'16px',color:s.color,marginTop:'5px'}}>{s.val.toFixed(1)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tier Benefits */}
+      <div className="pixel-panel mb-4" style={{borderColor:tier.color}}>
+        <h3 style={{fontFamily:'Press Start 2P',fontSize:'10px',color:tier.color,marginBottom:'12px'}}>🎁 BENEFICIOS ACTIVOS — {tier.label}</h3>
+        <div className="flex-col gap-2">
+          {getTierBenefits(tier.tier).map((b,i)=>(
+            <div key={i} style={{fontFamily:'VT323',fontSize:'18px',color:'var(--text-main)',display:'flex',alignItems:'center',gap:'8px'}}>
+              <span style={{color:tier.color}}>▶</span>{b}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid-3">
+        <StatCard icon="📋" label="TAREAS GLOBALES" value={globalTasks.length} color="var(--accent-purple)"/>
+        <StatCard icon="📚" label="TAREAS DE CURSO" value={courseTasks.length} color="var(--accent-blue)"/>
+        <StatCard icon="✅" label="COMPLETADAS" value={user.tasksCompleted||0} color="var(--accent-green)"/>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// STUDENT: TASKS
+// ============================================================
+function StudentTasks({user,showToast,refreshUser}){
+  const [tab,setTab]=useState('all');
+  const freshUser=(LS.get('amz_users')||[]).find(u=>u.id===user.id)||user;
+  const tasks=(LS.get('amz_tasks')||[]).filter(t=>!isTaskExpired(t));
+  const globalTasks=tasks.filter(t=>t.type==='global');
+  const courseTasks=tasks.filter(t=>t.type==='course');
+
+  const claimReward=(rewardIdx)=>{
+    const all=LS.get('amz_users')||[];
+    const idx=all.findIndex(u=>u.id===user.id);
+    if(idx<0)return;
+    const reward=all[idx].pendingRewards[rewardIdx];
+    if(!reward)return;
+
+    // Apply reward
+    all[idx].coins=(all[idx].coins||0)+reward.coins;
+    all[idx].xp=(all[idx].xp||0)+reward.xp;
+    all[idx].tasksCompleted=(all[idx].tasksCompleted||0)+1;
+    if(!all[idx].stats) all[idx].stats={fuerza:5,agilidad:5,inteligencia:5};
+    all[idx].stats[reward.attr]=(all[idx].stats[reward.attr]||5)+0.2;
+
+    // Level up check
+    let level=all[idx].level||1;
+    let xp=all[idx].xp;
+    while(level<100&&xp>=XP_FOR_LEVEL(level)){
+      xp-=XP_FOR_LEVEL(level);
+      level++;
+    }
+    all[idx].level=level;
+    all[idx].xp=xp;
+
+    // Remove claimed reward
+    all[idx].pendingRewards=all[idx].pendingRewards.filter((_,i)=>i!==rewardIdx);
+
+    LS.set('amz_users',all);
+    const st=LS.get('amz_students')||[];
+    const si=st.findIndex(s=>s.id===user.id);
+    if(si>=0){st[si]=all[idx];LS.set('amz_students',st);}
+
+    showToast(`🎉 +${reward.coins} AMZ V, +${reward.xp} XP, +0.2 ${reward.attr}`,'gold');
+    refreshUser();
+  };
+
+  const pending=freshUser.pendingRewards||[];
+
+  const displayTasks=tab==='all'?tasks:tab==='global'?globalTasks:courseTasks;
+
+  return(
+    <div>
+      <h1 className="title-gold" style={{fontSize:'14px',marginBottom:'20px'}}>📋 MIS TAREAS</h1>
+
+      {/* Pending rewards */}
+      {pending.length>0&&(
+        <div className="pixel-panel mb-4" style={{borderColor:'var(--accent-gold)',boxShadow:'var(--glow-gold)'}}>
+          <h3 style={{fontFamily:'Press Start 2P',fontSize:'9px',color:'var(--accent-gold)',marginBottom:'12px'}}>⚡ RECOMPENSAS PENDIENTES ({pending.length})</h3>
+          {pending.map((r,i)=>(
+            <div key={i} className="flex items-center justify-between pixel-card mb-2" style={{borderColor:'var(--accent-gold)',background:'rgba(255,215,0,0.05)'}}>
+              <div>
+                <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--accent-gold)'}}>{r.taskTitle}</div>
+                <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--text-dim)'}}>🪙{r.coins} + {r.xp}XP + +0.2 {r.attr}</div>
+              </div>
+              <button className="btn btn-gold btn-sm" onClick={()=>claimReward(i)}>⚡ RECLAMAR</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-2 mb-4">
+        {[['all','📋 TODAS'],['global','🌍 GLOBALES'],['course','📚 CURSO']].map(([k,l])=>(
+          <button key={k} className={`btn btn-sm ${tab===k?'btn-gold':'btn-dark'}`} onClick={()=>setTab(k)}>{l}</button>
+        ))}
+      </div>
+
+      {displayTasks.length===0&&<div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'22px',textAlign:'center',padding:'40px'}}>Sin tareas disponibles</div>}
+      {displayTasks.map(t=>{
+        const isValidated=t.validatedBy?.includes(user.id);
+        const hasPending=pending.find(r=>r.taskId===t.id);
+        return(
+          <div key={t.id} className={`task-card mb-3 ${isValidated?'validated':''}`}>
+            <div className="flex justify-between items-center mb-2">
+              <span style={{fontFamily:'Press Start 2P',fontSize:'9px',color:isValidated?'var(--accent-green)':'var(--accent-gold)'}}>{t.title}</span>
+              <div className="flex gap-2 items-center">
+                <span className={`badge ${t.type==='global'?'badge-purple':'badge-blue'}`}>{t.type==='global'?'GLOBAL':'CURSO'}</span>
+                {isValidated&&<span className="badge badge-green">✅ VALIDADA</span>}
+              </div>
+            </div>
+            <div style={{fontFamily:'VT323',fontSize:'17px',color:'var(--text-dim)',marginBottom:'8px'}}>{t.desc}</div>
+            <div style={{fontFamily:'VT323',fontSize:'15px',color:'var(--text-dim)',marginBottom:'5px'}}>
+              🎓 Prof. {t.teacherName}
+            </div>
+            {t.expiresAt&&<TimeLeft expiresAt={t.expiresAt}/>}
+            {isValidated&&(
+              <div style={{
+                marginTop:'10px',padding:'10px',
+                background:'rgba(0,255,136,0.05)',
+                border:'1px solid var(--accent-green)',
+                fontFamily:'Press Start 2P',fontSize:'8px',
+                color:'var(--accent-green)',
+              }}>
+                {hasPending?'⏳ RECOMPENSA PENDIENTE DE RECLAMAR':'✅ RECOMPENSA YA RECLAMADA'}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ============================================================
+// STUDENT: SHOP
+// ============================================================
+function StudentShop({user,showToast,refreshUser}){
+  const [items,setItemsList]=useState(LS.get('amz_items')||DEFAULT_ITEMS);
+  const freshUser=(LS.get('amz_users')||[]).find(u=>u.id===user.id)||user;
+  const bags=DEFAULT_BAGS;
+
+  const currentBag=bags.find(b=>b.id===freshUser.bag);
+  const invCount=(freshUser.inventory||[]).reduce((a,i)=>a+(i.qty||1),0);
+  const slotsUsed=invCount;
+  const slotsMax=currentBag?.slots||0;
+
+  const buyItem=(item)=>{
+    if(!freshUser.bag){showToast('¡Necesitas una mochila primero!','error');return;}
+    if(slotsUsed>=slotsMax){showToast('¡Mochila llena!','error');return;}
+    if((freshUser.coins||0)<item.price){showToast('No tienes suficientes AMZ V','error');return;}
+
+    const all=LS.get('amz_users')||[];
+    const idx=all.findIndex(u=>u.id===freshUser.id);
+    if(idx<0)return;
+    all[idx].coins=(all[idx].coins||0)-item.price;
+    if(!all[idx].inventory) all[idx].inventory=[];
+    const existing=all[idx].inventory.find(i=>i.itemId===item.id);
+    if(existing) existing.qty=(existing.qty||1)+1;
+    else all[idx].inventory.push({itemId:item.id,qty:1,usedAt:null});
+    LS.set('amz_users',all);
+    const st=LS.get('amz_students')||[];
+    const si=st.findIndex(s=>s.id===freshUser.id);
+    if(si>=0){st[si]=all[idx];LS.set('amz_students',st);}
+    showToast(`Compraste ${item.emoji} ${item.name}`,'gold');
+    refreshUser();
+  };
+
+  const buyBag=(bag)=>{
+    if(bag.level===1){
+      // First bag is free
+      if(freshUser.bag){showToast('Ya tienes una mochila','error');return;}
+    } else {
+      if((freshUser.coins||0)<bag.price){showToast('No tienes suficientes AMZ V','error');return;}
+      const currentLevel=bags.find(b=>b.id===freshUser.bag)?.level||0;
+      if(bag.level<=currentLevel){showToast('Ya tienes una mochila mejor','error');return;}
+    }
+    const all=LS.get('amz_users')||[];
+    const idx=all.findIndex(u=>u.id===freshUser.id);
+    if(idx<0)return;
+    if(bag.level>1) all[idx].coins=(all[idx].coins||0)-bag.price;
+    all[idx].bag=bag.id;
+    LS.set('amz_users',all);
+    const st=LS.get('amz_students')||[];
+    const si=st.findIndex(s=>s.id===freshUser.id);
+    if(si>=0){st[si]=all[idx];LS.set('amz_students',st);}
+    showToast(`${bag.emoji} ${bag.name} equipada!`,'success');
+    refreshUser();
+  };
+
+  return(
+    <div>
+      <h1 className="title-gold" style={{fontSize:'14px',marginBottom:'10px'}}>🛒 TIENDA AMZ</h1>
+      <div className="flex justify-between items-center mb-4">
+        <CoinsDisplay amount={freshUser.coins||0}/>
+        <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--text-dim)'}}>
+          🎒 {slotsUsed}/{slotsMax} slots usados
+        </div>
+      </div>
+
+      {/* Mochilas */}
+      <div className="pixel-panel mb-4">
+        <h3 className="title-green" style={{fontSize:'10px',marginBottom:'15px'}}>🎒 MOCHILAS</h3>
+        <div className="grid-3">
+          {bags.map(bag=>{
+            const owned=freshUser.bag===bag.id;
+            const currentLevel=bags.find(b=>b.id===freshUser.bag)?.level||0;
+            const canBuy=bag.level===1&&!freshUser.bag||(bag.level>currentLevel&&(freshUser.coins||0)>=bag.price);
+            return(
+              <div key={bag.id} className="pixel-card text-center" style={{border:owned?'2px solid var(--accent-gold)':'2px solid var(--border)'}}>
+                <div style={{fontSize:'36px',marginBottom:'8px'}}>{bag.emoji}</div>
+                <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:owned?'var(--accent-gold)':'var(--text-main)',marginBottom:'4px'}}>{bag.name}</div>
+                <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--text-dim)',marginBottom:'8px'}}>{bag.slots} slots</div>
+                {owned?<span className="badge badge-gold">EQUIPADA</span>:(
+                  <button className={`btn btn-sm ${canBuy?'btn-gold':'btn-dark'}`}
+                    disabled={!canBuy}
+                    onClick={()=>buyBag(bag)}>
+                    {bag.level===1?'GRATIS':bag.price+' AMZ V'}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Items */}
+      <h3 className="title-gold" style={{fontSize:'10px',marginBottom:'15px'}}>⚔️ OBJETOS</h3>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:'12px'}}>
+        {items.map(item=>{
+          const canAfford=(freshUser.coins||0)>=item.price;
+          const hasBag=!!freshUser.bag;
+          const hasSpace=slotsUsed<slotsMax;
+          return(
+            <div key={item.id} className="pixel-card" style={{opacity:(!hasBag||!hasSpace)?0.6:1}}>
+              <div style={{fontSize:'36px',textAlign:'center',marginBottom:'8px'}}>
+                {item.image?<img src={item.image} style={{width:50,height:50,objectFit:'cover'}}/>:item.emoji}
+              </div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--accent-gold)',marginBottom:'4px'}}>{item.name}</div>
+              <div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)',marginBottom:'6px'}}>{item.desc}</div>
+              <div className="flex justify-between items-center mb-2">
+                <CoinsDisplay amount={item.price}/>
+                <span className={`badge ${item.mode==='single'?'badge-orange':item.mode==='multiple'?'badge-blue':'badge-gray'}`} style={{fontSize:'6px'}}>
+                  {item.mode==='single'?'ÚNICO':item.mode==='multiple'?'MÚLT':'N/A'}
+                </span>
+              </div>
+              <button
+                className={`btn btn-sm w-full ${canAfford&&hasBag&&hasSpace?'btn-gold':'btn-dark'}`}
+                style={{width:'100%'}}
+                disabled={!canAfford||!hasBag||!hasSpace}
+                onClick={()=>buyItem(item)}
+              >
+                {!hasBag?'NECESITAS MOCHILA':!hasSpace?'MOCHILA LLENA':!canAfford?'SIN FONDOS':'🛒 COMPRAR'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// STUDENT: INVENTORY
+// ============================================================
+function StudentInventory({user,showToast,refreshUser}){
+  const [useModal,setUseModal]=useState(null);
+  const [selectedTeacher,setSelectedTeacher]=useState('');
+  const freshUser=(LS.get('amz_users')||[]).find(u=>u.id===user.id)||user;
+  const allItems=LS.get('amz_items')||DEFAULT_ITEMS;
+  const teachers=(LS.get('amz_users')||[]).filter(u=>u.role==='teacher');
+  const bags=DEFAULT_BAGS;
+  const currentBag=bags.find(b=>b.id===freshUser.bag);
+  const inv=freshUser.inventory||[];
+
+  const useItem=()=>{
+    if(!selectedTeacher){showToast('Selecciona un profesor','error');return;}
+    const item=allItems.find(i=>i.id===useModal.itemId);
+    if(!item)return;
+    if(item.mode==='none'){showToast('Este objeto no se puede usar','error');return;}
+
+    const all=LS.get('amz_users')||[];
+    const idx=all.findIndex(u=>u.id===freshUser.id);
+    if(idx<0)return;
+
+    if(item.mode==='single'){
+      const invIdx=all[idx].inventory.findIndex(i=>i.itemId===item.id);
+      if(invIdx>=0){
+        all[idx].inventory[invIdx].qty=(all[idx].inventory[invIdx].qty||1)-1;
+        if(all[idx].inventory[invIdx].qty<=0) all[idx].inventory.splice(invIdx,1);
+      }
+    }
+    LS.set('amz_users',all);
+
+    // Send notification
+    const notifs=LS.get('amz_notifications')||[];
+    notifs.push({
+      id:'notif_'+Date.now(),
+      teacherId:selectedTeacher,
+      studentName:freshUser.name,
+      studentId:freshUser.id,
+      itemName:item.name,
+      itemEmoji:item.emoji||'🎁',
+      date:Date.now(),
+      read:false,
+    });
+    LS.set('amz_notifications',notifs);
+
+    const st=LS.get('amz_students')||[];
+    const si=st.findIndex(s=>s.id===freshUser.id);
+    if(si>=0){st[si]=all[idx];LS.set('amz_students',st);}
+
+    showToast(`Usaste ${item.emoji} ${item.name}!`,'success');
+    setUseModal(null);setSelectedTeacher('');
+    refreshUser();
+  };
+
+  return(
+    <div>
+      <h1 className="title-gold" style={{fontSize:'14px',marginBottom:'10px'}}>🎒 INVENTARIO</h1>
+      {currentBag?(
+        <div style={{fontFamily:'VT323',fontSize:'18px',color:'var(--text-dim)',marginBottom:'20px'}}>
+          {currentBag.emoji} {currentBag.name} — {inv.reduce((a,i)=>a+(i.qty||1),0)}/{currentBag.slots} slots
+        </div>
+      ):(
+        <div style={{fontFamily:'Press Start 2P',fontSize:'9px',color:'var(--accent-red)',marginBottom:'20px'}}>⚠️ Sin mochila equipada</div>
+      )}
+
+      {inv.length===0?(
+        <div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'22px',textAlign:'center',padding:'40px'}}>
+          Inventario vacío — ¡Ve a la tienda!
+        </div>
+      ):(
+        <div style={{display:'flex',flexWrap:'wrap',gap:'10px'}}>
+          {inv.map((entry,i)=>{
+            const item=allItems.find(it=>it.id===entry.itemId);
+            if(!item)return null;
+            return(
+              <div key={i} className="inv-slot" style={{width:'80px',height:'80px',flexDirection:'column',gap:'4px'}}
+                onClick={()=>setUseModal(entry)}>
+                <div style={{fontSize:'28px'}}>
+                  {item.image?<img src={item.image} style={{width:32,height:32,objectFit:'cover'}}/>:item.emoji}
+                </div>
+                <div style={{fontFamily:'Press Start 2P',fontSize:'6px',color:'var(--text-dim)',textAlign:'center',lineHeight:'1.2'}}>{item.name.substring(0,8)}</div>
+                <div className="qty">x{entry.qty||1}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {useModal&&(()=>{
+        const item=allItems.find(i=>i.id===useModal.itemId);
+        return(
+          <Modal title={`USAR OBJETO`} onClose={()=>{setUseModal(null);setSelectedTeacher('');}}>
+            <div className="text-center mb-4">
+              <div style={{fontSize:'50px',marginBottom:'10px'}}>{item?.image?<img src={item.image} style={{width:64,height:64,objectFit:'cover'}}/>:item?.emoji}</div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'10px',color:'var(--accent-gold)',marginBottom:'5px'}}>{item?.name}</div>
+              <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--text-dim)',marginBottom:'5px'}}>{item?.desc}</div>
+              <span className={`badge ${item?.mode==='none'?'badge-gray':item?.mode==='single'?'badge-orange':'badge-blue'}`}>
+                {item?.mode==='single'?'SE CONSUMIRÁ':item?.mode==='multiple'?'PERMANECE EN INVENTARIO':'NO UTILIZABLE'}
+              </span>
+            </div>
+            {item?.mode!=='none'&&(
+              <>
+                <div className="mb-3">
+                  <label style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',display:'block',marginBottom:'8px'}}>NOTIFICAR A PROFESOR</label>
+                  <select className="pixel-select" value={selectedTeacher} onChange={e=>setSelectedTeacher(e.target.value)}>
+                    <option value="">Seleccionar profesor...</option>
+                    {teachers.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
+                <button className="btn btn-gold w-full" style={{width:'100%'}} onClick={useItem}>⚡ USAR OBJETO</button>
+              </>
+            )}
+          </Modal>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ============================================================
+// STUDENT: PROFILE
+// ============================================================
+function StudentProfile({user,showToast,refreshUser}){
+  const freshUser=(LS.get('amz_users')||[]).find(u=>u.id===user.id)||user;
+  const char=CHARACTERS.find(c=>c.id===freshUser.character);
+  const tier=getTier(freshUser.level||1);
+
+  const changeImage=()=>{
+    const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+    inp.onchange=e=>{
+      const file=e.target.files[0];if(!file)return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const all=LS.get('amz_users')||[];
+        const idx=all.findIndex(u=>u.id===freshUser.id);
+        if(idx>=0){all[idx].image=ev.target.result;LS.set('amz_users',all);}
+        const st=LS.get('amz_students')||[];
+        const si=st.findIndex(s=>s.id===freshUser.id);
+        if(si>=0){st[si].image=ev.target.result;LS.set('amz_students',st);}
+        refreshUser();showToast('Imagen actualizada','success');
+      };
+      reader.readAsDataURL(file);
+    };inp.click();
+  };
+
+  const xpNeeded=XP_FOR_LEVEL(freshUser.level||1);
+
+  return(
+    <div style={{maxWidth:'600px'}}>
+      <h1 className="title-gold" style={{fontSize:'14px',marginBottom:'20px'}}>⚔️ MI PERFIL</h1>
+      
+      <div className="pixel-panel mb-4" style={{borderColor:tier.color}}>
+        <div className="flex items-center gap-4 mb-4">
+          <div style={{position:'relative'}}>
+            <PixelAvatar user={freshUser} size={80}/>
+            <button className="btn btn-dark btn-xs" style={{position:'absolute',bottom:-8,right:-8,fontSize:'8px'}} onClick={changeImage}>🖼️</button>
+          </div>
+          <div>
+            <div style={{fontFamily:'Press Start 2P',fontSize:'12px',color:tier.color,marginBottom:'5px'}}>{freshUser.name}</div>
+            <div style={{fontFamily:'VT323',fontSize:'18px',color:'var(--text-dim)',marginBottom:'5px'}}>@{freshUser.username}</div>
+            <span className="badge" style={{background:tier.color,color:'#000',fontSize:'7px'}}>{tier.label}</span>
+          </div>
+        </div>
+
+        <XPBar current={freshUser.xp||0} total={xpNeeded} level={freshUser.level||1}/>
+
+        <div className="grid-3 mt-4 mb-4">
+          {[
+            {label:'⚔️ FUERZA',val:freshUser.stats?.fuerza||5,color:'#ff6644'},
+            {label:'💨 AGILIDAD',val:freshUser.stats?.agilidad||5,color:'#44aaff'},
+            {label:'🔮 INTELIGENCIA',val:freshUser.stats?.inteligencia||5,color:'#aa44ff'},
+          ].map(s=>(
+            <div key={s.label} style={{textAlign:'center',padding:'10px',background:'rgba(0,0,0,0.3)',border:'1px solid var(--border)'}}>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'7px',color:s.color,marginBottom:'5px'}}>{s.label}</div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'14px',color:s.color}}>{s.val.toFixed(1)}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid-2">
+          <div style={{textAlign:'center',padding:'10px',background:'rgba(0,0,0,0.3)',border:'1px solid var(--border)'}}>
+            <div style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',marginBottom:'5px'}}>TAREAS COMPLETADAS</div>
+            <div style={{fontFamily:'Press Start 2P',fontSize:'16px',color:'var(--accent-green)'}}>{freshUser.tasksCompleted||0}</div>
+          </div>
+          <div style={{textAlign:'center',padding:'10px',background:'rgba(0,0,0,0.3)',border:'1px solid var(--border)'}}>
+            <div style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'var(--text-dim)',marginBottom:'5px'}}>AMZ V</div>
+            <div style={{fontFamily:'Press Start 2P',fontSize:'16px',color:'var(--accent-gold)'}}>{Math.floor(freshUser.coins||0)}</div>
+          </div>
+        </div>
+      </div>
+
+      {char&&(
+        <div className="pixel-panel">
+          <h3 className="title-gold" style={{fontSize:'10px',marginBottom:'15px'}}>🧙 PERSONAJE</h3>
+          <div className="flex items-center gap-4">
+            <div style={{fontSize:'50px'}}>{char.emoji}</div>
+            <div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'10px',color:char.color}}>{char.name}</div>
+              <div style={{fontFamily:'VT323',fontSize:'18px',color:'var(--text-dim)'}}>{char.type} — {char.desc}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tier benefits */}
+      <div className="pixel-panel mt-4" style={{borderColor:tier.color}}>
+        <h3 style={{fontFamily:'Press Start 2P',fontSize:'9px',color:tier.color,marginBottom:'12px'}}>🎁 {tier.label}</h3>
+        {getTierBenefits(tier.tier).map((b,i)=>(
+          <div key={i} style={{fontFamily:'VT323',fontSize:'18px',color:'var(--text-main)',display:'flex',gap:'8px',marginBottom:'5px'}}>
+            <span style={{color:tier.color}}>▶</span>{b}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// LEADERBOARD (SHARED)
+// ============================================================
+function Leaderboard(){
+  const users=LS.get('amz_users')||[];
+  const students=users.filter(u=>u.role==='student')
+    .sort((a,b)=>{
+      if((b.level||1)!==(a.level||1)) return (b.level||1)-(a.level||1);
+      if((b.tasksCompleted||0)!==(a.tasksCompleted||0)) return (b.tasksCompleted||0)-(a.tasksCompleted||0);
+      return (b.inventory?.length||0)-(a.inventory?.length||0);
+    });
+
+  const medals=['🥇','🥈','🥉'];
+
+  return(
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <span style={{fontSize:'36px'}}>🏆</span>
+        <h1 className="title-gold" style={{fontSize:'14px'}}>RANKING GLOBAL</h1>
+      </div>
+
+      <div className="pixel-panel">
+        {students.length===0&&<div style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'22px',textAlign:'center',padding:'40px'}}>Sin estudiantes registrados</div>}
+        {students.map((s,i)=>{
+          const tier=getTier(s.level||1);
+          const xpNeeded=XP_FOR_LEVEL(s.level||1);
+          return(
+            <div key={s.id} className="lb-row">
+              <div className="lb-rank" style={{color:i<3?tier.color:'var(--text-dim)'}}>
+                {i<3?medals[i]:`#${i+1}`}
+              </div>
+              <PixelAvatar user={s} size={40}/>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:'Press Start 2P',fontSize:'9px'}}>{s.name}</div>
+                <div style={{fontFamily:'VT323',fontSize:'15px',color:tier.color}}>{tier.label.split('—')[0].trim()}</div>
+                <div style={{width:'120px',marginTop:'4px'}}>
+                  <div className="progress-bar-wrap progress-xp" style={{height:'8px'}}>
+                    <div className="progress-bar-fill" style={{width:Math.min(100,((s.xp||0)/xpNeeded)*100)+'%'}}/>
+                  </div>
+                </div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                <div style={{fontFamily:'Press Start 2P',fontSize:'12px',color:tier.color}}>Nv.{s.level||1}</div>
+                <div style={{fontFamily:'VT323',fontSize:'15px',color:'var(--text-dim)'}}>{s.tasksCompleted||0} tareas</div>
+                <CoinsDisplay amount={s.coins||0}/>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// SHARED UTILS
+// ============================================================
+function isTaskExpired(task){
+  if(!task.expiresAt) return false;
+  return Date.now()>task.expiresAt;
+}
+
+function TimeLeft({expiresAt}){
+  const [left,setLeft]=useState('');
+  useEffect(()=>{
+    const calc=()=>{
+      const ms=expiresAt-Date.now();
+      if(ms<=0){setLeft('EXPIRADA');return;}
+      const d=Math.floor(ms/86400000);
+      const h=Math.floor((ms%86400000)/3600000);
+      const m=Math.floor((ms%3600000)/60000);
+      setLeft(`${d}d ${h}h ${m}m`);
+    };
+    calc();
+    const t=setInterval(calc,60000);
+    return()=>clearInterval(t);
+  },[expiresAt]);
+  const urgent=(expiresAt-Date.now())<86400000;
+  return(
+    <div style={{fontFamily:'Press Start 2P',fontSize:'7px',color:urgent?'var(--accent-red)':'var(--text-dim)',marginTop:'5px'}}>
+      ⏰ {left}
+    </div>
+  );
+}
+
+function TaskCardView({task}){
+  return(
+    <div className="task-card mb-3">
+      <div className="flex justify-between items-center mb-2">
+        <span style={{fontFamily:'Press Start 2P',fontSize:'9px',color:'var(--accent-gold)'}}>{task.title}</span>
+        <span className={`badge ${task.type==='global'?'badge-purple':'badge-blue'}`}>{task.type==='global'?'GLOBAL':'CURSO'}</span>
+      </div>
+      <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--text-dim)',marginBottom:'5px'}}>{task.desc}</div>
+      <div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)'}}>{task.teacherName&&`🎓 ${task.teacherName}`}</div>
+      {task.expiresAt&&<TimeLeft expiresAt={task.expiresAt}/>}
+    </div>
+  );
+}
+
+// Mount
+const container=document.getElementById('root');
+const root=ReactDOM.createRoot(container);
+root.render(<App/>);
+</script>
+</body>
+</html>
