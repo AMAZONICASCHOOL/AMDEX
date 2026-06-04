@@ -1,114 +1,937 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMDEX - Plataforma Escolar RPG Pixel Art</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        
-        * {
-            font-family: 'Press Start 2P', cursive;
-        }
-        
-        html, body, #root {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
-        
-        .pixel-container {
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-        }
-        
-        @keyframes pixelFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .pixel-float {
-            animation: pixelFloat 2s ease-in-out infinite;
-        }
-        
-        @keyframes pixelPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .pixel-pulse {
-            animation: pixelPulse 0.5s ease-in-out infinite;
-        }
-        
-        .retro-border {
-            border: 4px solid #2d1810;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
-        }
-        
-        .retro-button {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            border: 3px solid #2d1810;
-            color: #FFEB3B;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.05s;
-            font-size: 0.75rem;
-        }
-        
-        .retro-button:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 2px 2px 0px #2d1810;
-        }
-        
-        .retro-button:active {
-            transform: translate(0px, 0px);
-        }
-        
-        .retro-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .pixel-text {
-            color: #2d1810;
-            text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.5);
-        }
-        
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        
-        .stat-bar {
-            background: linear-gradient(90deg, #8B4513, #D2691E);
-            border: 2px solid #2d1810;
-            height: 20px;
-        }
-        
-        .xp-bar {
-            background: linear-gradient(90deg, #4CAF50, #8BC34A);
-            border: 2px solid #2d1810;
-            height: 16px;
-        }
-        
-        .task-completed {
-            background-color: #C8E6C9;
-            border-left: 4px solid #4CAF50;
-        }
-        
-        .task-pending {
-            background-color: #FFE0B2;
-            border-left: 4px solid #FF9800;
-        }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Amazónica RPG — Sistema de Recompensas Escolar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --bg-dark:#0a0a1a;
+      --bg-panel:#0f0f2e;
+      --bg-card:#141432;
+      --bg-hover:#1a1a42;
+      --accent-gold:#ffd700;
+      --accent-green:#00ff88;
+      --accent-blue:#00aaff;
+      --accent-purple:#aa44ff;
+      --accent-red:#ff4455;
+      --accent-orange:#ff8800;
+      --text-main:#e8e8ff;
+      --text-dim:#8888aa;
+      --border:#2a2a5a;
+      --border-bright:#4444aa;
+      --pixel-shadow: 3px 3px 0px rgba(0,0,0,0.8);
+      --glow-gold: 0 0 10px #ffd700, 0 0 20px #ffd700;
+      --glow-green: 0 0 10px #00ff88, 0 0 20px #00ff88;
+      --glow-blue: 0 0 10px #00aaff, 0 0 20px #00aaff;
+      --glow-purple: 0 0 10px #aa44ff, 0 0 20px #aa44ff;
+    }
+    html,body,#root{height:100%;width:100%;}
+    body{
+      background-color:var(--bg-dark);
+      color:var(--text-main);
+      font-family:'VT323',monospace;
+      font-size:18px;
+      overflow-x:hidden;
+      image-rendering:pixelated;
+    }
+    /* Pixel art star background */
+    body::before{
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 10%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 75%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(2px 2px at 50% 50%, rgba(255,215,0,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 90%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 5%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        linear-gradient(180deg, #0a0a1a 0%, #050518 50%, #0a0a1a 100%);
+      z-index:-1;
+      pointer-events:none;
+    }
+    ::-webkit-scrollbar{width:8px;}
+    ::-webkit-scrollbar-track{background:#0a0a1a;}
+    ::-webkit-scrollbar-thumb{background:#2a2a6a;image-rendering:pixelated;}
+    .btn{
+      font-family:'Press Start 2P',monospace;
+      font-size:9px;
+      padding:10px 16px;
+      border:none;
+      cursor:pointer;
+      position:relative;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      transition:all 0.1s;
+      image-rendering:pixelated;
+    }
+    .btn::after{
+      content:'';
+      position:absolute;
+      bottom:-4px;
+      right:-4px;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.5);
+      z-index:-1;
+    }
+    .btn:active{transform:translate(2px,2px);}
+    .btn:active::after{display:none;}
+    .btn-gold{background:var(--accent-gold);color:#000;}
+    .btn-green{background:var(--accent-green);color:#000;}
+    .btn-blue{background:var(--accent-blue);color:#000;}
+    .btn-purple{background:var(--accent-purple);color:#fff;}
+    .btn-red{background:var(--accent-red);color:#fff;}
+    .btn-dark{background:var(--bg-hover);color:var(--text-main);border:2px solid var(--border-bright);}
+    .btn-sm{font-size:7px;padding:6px 10px;}
+    .btn-xs{font-size:6px;padding:4px 8px;}
+    .pixel-panel{
+      background:var(--bg-panel);
+      border:3px solid var(--border-bright);
+      box-shadow:4px 4px 0 #000, inset 1px 1px 0 rgba(255,255,255,0.05);
+      padding:20px;
+      position:relative;
+    }
+    .pixel-panel::before{
+      content:'';
+      position:absolute;
+      top:0;left:0;right:0;
+      height:2px;
+      background:linear-gradient(90deg,transparent,var(--border-bright),transparent);
+    }
+    .pixel-card{
+      background:var(--bg-card);
+      border:2px solid var(--border);
+      padding:15px;
+      position:relative;
+      transition:all 0.2s;
+    }
+    .pixel-card:hover{
+      border-color:var(--border-bright);
+      transform:translateY(-2px);
+      box-shadow:0 4px 0 #000;
+    }
+    .title-gold{
+      font-family:'Press Start 2P',monospace;
+      color:var(--accent-gold);
+      text-shadow:var(--glow-gold);
+    }
+    .title-green{
+      font-family:'Press Start 2P',monospace;
+      color:var(--accent-green);
+      text-shadow:var(--glow-green);
+    }
+    .title-blue{
+      font-family:'Press Start 2P',monospace;
+      color:var(--accent-blue);
+      text-shadow:var(--glow-blue);
+    }
+    .title-purple{
+      font-family:'Press Start 2P',monospace;
+      color:var(--accent-purple);
+      text-shadow:var(--glow-purple);
+    }
+    .progress-bar-wrap{
+      background:#111130;
+      border:2px solid var(--border);
+      height:18px;
+      position:relative;
+      overflow:hidden;
+    }
+    .progress-bar-fill{
+      height:100%;
+      position:relative;
+      transition:width 0.5s;
+    }
+    .progress-bar-fill::after{
+      content:'';
+      position:absolute;
+      top:0;left:0;right:0;
+      height:40%;
+      background:rgba(255,255,255,0.15);
+    }
+    .progress-xp .progress-bar-fill{background:linear-gradient(90deg,#aa44ff,#ff88ff);}
+    .progress-hp .progress-bar-fill{background:linear-gradient(90deg,#ff2244,#ff6688);}
+    .pixel-input{
+      background:#0a0a20;
+      border:2px solid var(--border-bright);
+      color:var(--text-main);
+      font-family:'VT323',monospace;
+      font-size:20px;
+      padding:10px 14px;
+      width:100%;
+      outline:none;
+      transition:border-color 0.2s;
+    }
+    .pixel-input:focus{border-color:var(--accent-blue);box-shadow:0 0 8px rgba(0,170,255,0.3);}
+    .pixel-input::placeholder{color:var(--text-dim);}
+    .pixel-select{
+      background:#0a0a20;
+      border:2px solid var(--border-bright);
+      color:var(--text-main);
+      font-family:'VT323',monospace;
+      font-size:18px;
+      padding:8px 12px;
+      width:100%;
+      outline:none;
+    }
+    .badge{
+      font-family:'Press Start 2P',monospace;
+      font-size:7px;
+      padding:4px 8px;
+      display:inline-block;
+    }
+    .badge-gold{background:var(--accent-gold);color:#000;}
+    .badge-green{background:var(--accent-green);color:#000;}
+    .badge-blue{background:var(--accent-blue);color:#000;}
+    .badge-purple{background:var(--accent-purple);color:#fff;}
+    .badge-red{background:var(--accent-red);color:#fff;}
+    .badge-orange{background:var(--accent-orange);color:#000;}
+    .badge-gray{background:#333355;color:var(--text-dim);}
+    .nav-item{
+      font-family:'Press Start 2P',monospace;
+      font-size:8px;
+      padding:12px 16px;
+      cursor:pointer;
+      border-left:3px solid transparent;
+      transition:all 0.2s;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--text-dim);
+    }
+    .nav-item:hover{
+      background:var(--bg-hover);
+      color:var(--text-main);
+      border-left-color:var(--border-bright);
+    }
+    .nav-item.active{
+      background:var(--bg-hover);
+      color:var(--accent-gold);
+      border-left-color:var(--accent-gold);
+    }
+    @keyframes flicker{
+      0%,100%{opacity:1;}
+      92%{opacity:1;}
+      93%{opacity:0.7;}
+      95%{opacity:1;}
+      97%{opacity:0.8;}
+    }
+    @keyframes float{
+      0%,100%{transform:translateY(0);}
+      50%{transform:translateY(-6px);}
+    }
+    @keyframes scanline{
+      0%{transform:translateY(-100%);}
+      100%{transform:translateY(100vh);}
+    }
+    @keyframes pulse-gold{
+      0%,100%{box-shadow:var(--glow-gold);}
+      50%{box-shadow:0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 60px #ffd700;}
+    }
+    @keyframes levelup{
+      0%{transform:scale(1);opacity:1;}
+      50%{transform:scale(1.3);opacity:0.8;}
+      100%{transform:scale(1);opacity:1;}
+    }
+    @keyframes slideIn{
+      from{transform:translateX(-20px);opacity:0;}
+      to{transform:translateX(0);opacity:1;}
+    }
+    @keyframes shimmer{
+      0%{background-position:-200% 0;}
+      100%{background-position:200% 0;}
+    }
+    .float-anim{animation:float 3s ease-in-out infinite;}
+    .pulse-anim{animation:pulse-gold 2s ease-in-out infinite;}
+    .flicker-anim{animation:flicker 4s linear infinite;}
+    .slide-in{animation:slideIn 0.3s ease-out;}
+    .tier1{color:#aaffaa;}
+    .tier2{color:#aaaaff;}
+    .tier3{color:var(--accent-purple);}
+    .tier4{color:var(--accent-gold);}
+    .char-sprite{
+      font-size:40px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:64px;
+      height:64px;
+      background:var(--bg-hover);
+      border:2px solid var(--border-bright);
+      image-rendering:pixelated;
+    }
+    .notif-dot{
+      width:10px;height:10px;
+      background:var(--accent-red);
+      border-radius:0;
+      display:inline-block;
+      animation:pulse-gold 1s infinite;
+    }
+    .modal-overlay{
+      position:fixed;inset:0;
+      background:rgba(0,0,0,0.85);
+      z-index:1000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .modal-box{
+      background:var(--bg-panel);
+      border:3px solid var(--accent-gold);
+      box-shadow:0 0 30px rgba(255,215,0,0.3),8px 8px 0 #000;
+      padding:30px;
+      max-width:600px;
+      width:100%;
+      max-height:90vh;
+      overflow-y:auto;
+      position:relative;
+    }
+    .scanlines::after{
+      content:'';
+      position:fixed;
+      top:0;left:0;right:0;
+      height:2px;
+      background:rgba(255,255,255,0.03);
+      z-index:9999;
+      pointer-events:none;
+      animation:scanline 8s linear infinite;
+    }
+    .lb-row{
+      display:flex;align-items:center;
+      padding:10px 15px;
+      border-bottom:1px solid var(--border);
+      transition:background 0.2s;
+      gap:12px;
+    }
+    .lb-row:hover{background:var(--bg-hover);}
+    .lb-rank{
+      font-family:'Press Start 2P',monospace;
+      font-size:12px;
+      width:30px;
+      text-align:center;
+    }
+    .task-card{
+      background:var(--bg-card);
+      border:2px solid var(--border);
+      padding:15px;
+      margin-bottom:10px;
+      transition:all 0.2s;
+    }
+    .task-card.validated{border-color:#00ff88;background:rgba(0,255,136,0.05);}
+    .task-card.expired{border-color:#ff4455;opacity:0.6;}
+    .inv-slot{
+      width:64px;height:64px;
+      background:#0a0a20;
+      border:2px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+      transition:all 0.2s;
+      position:relative;
+      font-size:28px;
+    }
+    .inv-slot:hover{border-color:var(--accent-gold);}
+    .inv-slot.empty{opacity:0.3;}
+    .inv-slot .qty{
+      position:absolute;bottom:2px;right:4px;
+      font-family:'Press Start 2P',monospace;
+      font-size:8px;
+      color:var(--accent-gold);
+    }
+    .stat-row{display:flex;align-items:center;gap:10px;margin:6px 0;}
+    .stat-label{
+      font-family:'Press Start 2P',monospace;
+      font-size:8px;
+      width:90px;
+      color:var(--text-dim);
+    }
+    .stat-val{
+      font-family:'Press Start 2P',monospace;
+      font-size:10px;
+      min-width:50px;
+      text-align:right;
+    }
+    .coins{
+      font-family:'Press Start 2P',monospace;
+      font-size:11px;
+      color:var(--accent-gold);
+      display:flex;align-items:center;gap:6px;
+    }
+    @media(max-width:768px){
+      .sidebar{width:200px!important;}
+      .main-layout{flex-direction:column;}
+    }
+    .login-bg{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:radial-gradient(ellipse at 50% 50%, #0a0a30 0%, #000010 70%);
+      position:relative;
+      overflow:hidden;
+    }
+    .login-bg::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:
+        repeating-linear-gradient(0deg,transparent,transparent 30px,rgba(0,100,255,0.02) 30px,rgba(0,100,255,0.02) 31px),
+        repeating-linear-gradient(90deg,transparent,transparent 30px,rgba(0,100,255,0.02) 30px,rgba(0,100,255,0.02) 31px);
+      pointer-events:none;
+    }
+    .login-title{
+      font-family:'Press Start 2P',monospace;
+      font-size:clamp(14px,3vw,22px);
+      color:var(--accent-gold);
+      text-shadow:var(--glow-gold);
+      text-align:center;
+      line-height:1.8;
+      animation:flicker 5s linear infinite;
+    }
+    .flex{display:flex;}
+    .flex-col{display:flex;flex-direction:column;}
+    .items-center{align-items:center;}
+    .justify-center{justify-content:center;}
+    .justify-between{justify-content:space-between;}
+    .gap-2{gap:8px;}
+    .gap-3{gap:12px;}
+    .gap-4{gap:16px;}
+    .w-full{width:100%;}
+    .text-center{text-align:center;}
+    .mb-2{margin-bottom:8px;}
+    .mb-3{margin-bottom:12px;}
+    .mb-4{margin-bottom:16px;}
+    .mt-2{margin-top:8px;}
+    .mt-3{margin-top:12px;}
+    .mt-4{margin-top:16px;}
+    .p-3{padding:12px;}
+    .p-4{padding:16px;}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;}
+    .text-gold{color:var(--accent-gold);}
+    .text-green{color:var(--accent-green);}
+    .text-blue{color:var(--accent-blue);}
+    .text-red{color:var(--accent-red);}
+    .text-dim{color:var(--text-dim);}
+    .text-sm{font-size:14px;}
+    .text-xs{font-size:12px;}
+    .bold{font-family:'Press Start 2P',monospace;}
+    .rounded{border-radius:0;}
+    .overflow-auto{overflow:auto;}
+    .overflow-hidden{overflow:hidden;}
+    .relative{position:relative;}
+    .absolute{position:absolute;}
+  </style>
 </head>
-<body class="bg-gradient-to-b from-sky-300 to-yellow-100 overflow-hidden">
-    <div id="root"></div>
-    <script type="text/babel" src="app.js"></script>
+<body class="scanlines">
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+// ============================================================
+// DATOS & CONSTANTES
+// ============================================================
+const CHARACTERS = [
+  {id:'c1',name:'Guerrero Roca',type:'Fuerza',emoji:'⚔️',color:'#ff6644',desc:'Golpea primero, piensa después',base:{fuerza:10,agilidad:5,inteligencia:3}},
+  {id:'c2',name:'Berserker',type:'Fuerza',emoji:'🪓',color:'#ff4422',desc:'La furia es su escudo',base:{fuerza:12,agilidad:4,inteligencia:2}},
+  {id:'c3',name:'Paladín',type:'Fuerza',emoji:'🛡️',color:'#ffaa44',desc:'Protege a los débiles',base:{fuerza:9,agilidad:5,inteligencia:5}},
+  {id:'c4',name:'Coloso',type:'Fuerza',emoji:'🏔️',color:'#888888',desc:'Inamovible como la roca',base:{fuerza:14,agilidad:2,inteligencia:2}},
+  {id:'c5',name:'Cazador',type:'Fuerza',emoji:'🏹',color:'#88aa44',desc:'El bosque es su hogar',base:{fuerza:8,agilidad:8,inteligencia:3}},
+  {id:'c6',name:'Ninja Sombra',type:'Agilidad',emoji:'🌑',color:'#444466',desc:'Rápido como el viento',base:{fuerza:4,agilidad:12,inteligencia:5}},
+  {id:'c7',name:'Ladrón',type:'Agilidad',emoji:'🗡️',color:'#664422',desc:'Nadie lo ve venir',base:{fuerza:5,agilidad:11,inteligencia:6}},
+  {id:'c8',name:'Bailarín de Tormenta',type:'Agilidad',emoji:'⚡',color:'#ffff44',desc:'Danza entre los rayos',base:{fuerza:3,agilidad:14,inteligencia:4}},
+  {id:'c9',name:'Explorador',type:'Agilidad',emoji:'🧭',color:'#44aa88',desc:'Descubre lo desconocido',base:{fuerza:6,agilidad:10,inteligencia:6}},
+  {id:'c10',name:'Acróbata',type:'Agilidad',emoji:'🎭',color:'#ff88aa',desc:'El peligro es su juego',base:{fuerza:5,agilidad:13,inteligencia:4}},
+  {id:'c11',name:'Archimago',type:'Inteligencia',emoji:'🔮',color:'#aa44ff',desc:'El conocimiento es poder',base:{fuerza:2,agilidad:4,inteligencia:13}},
+  {id:'c12',name:'Alquimista',type:'Inteligencia',emoji:'⚗️',color:'#44ffaa',desc:'Transforma lo imposible',base:{fuerza:4,agilidad:5,inteligencia:12}},
+  {id:'c13',name:'Cronista',type:'Inteligencia',emoji:'📜',color:'#ffffaa',desc:'Sabe todo lo que pasó',base:{fuerza:3,agilidad:6,inteligencia:12}},
+  {id:'c14',name:'Oráculo',type:'Inteligencia',emoji:'🌟',color:'#ffffff',desc:'Ve el futuro en las estrellas',base:{fuerza:2,agilidad:5,inteligencia:14}},
+  {id:'c15',name:'Inventor',type:'Inteligencia',emoji:'⚙️',color:'#aaaaaa',desc:'Crea lo que no existe',base:{fuerza:5,agilidad:5,inteligencia:11}},
+];
+
+const DEFAULT_ITEMS = [
+  {id:'i1',emoji:'🍎',name:'Manzana Mágica',desc:'Restaura energía al instante',price:5,mode:'single',category:'consumible'},
+  {id:'i2',emoji:'🗡️',name:'Espada Corta',desc:'Arma básica de aventurero',price:15,mode:'multiple',category:'arma'},
+  {id:'i3',emoji:'🛡️',name:'Escudo Rústico',desc:'Protección elemental',price:12,mode:'multiple',category:'armadura'},
+  {id:'i4',emoji:'📚',name:'Tomo de Saberes',desc:'Acceso prioritario biblioteca',price:20,mode:'single',category:'beneficio'},
+  {id:'i5',emoji:'🔮',name:'Cristal de Visión',desc:'Revela secretos ocultos',price:25,mode:'single',category:'objeto'},
+  {id:'i6',emoji:'⚗️',name:'Poción de XP',desc:'Doble XP por 1 hora',price:30,mode:'single',category:'consumible'},
+  {id:'i7',emoji:'🌟',name:'Estrella de Logro',desc:'Insignia de honor',price:50,mode:'none',category:'cosmético'},
+  {id:'i8',emoji:'🎭',name:'Máscara Épica',desc:'Cosmético exclusivo',price:40,mode:'none',category:'cosmético'},
+  {id:'i9',emoji:'🏆',name:'Copa de Campeón',desc:'Símbolo de victoria',price:100,mode:'none',category:'cosmético'},
+  {id:'i10',emoji:'⚡',name:'Runa de Velocidad',desc:'Aumenta agilidad temporalmente',price:18,mode:'single',category:'objeto'},
+];
+
+const DEFAULT_BAGS = [
+  {id:'b1',name:'Mochila de Aventurero',emoji:'🎒',slots:5,price:0,level:1},
+  {id:'b2',name:'Mochila de Héroe',emoji:'🧳',slots:10,price:100,level:2},
+  {id:'b3',name:'Mochila Legendaria',emoji:'💼',slots:15,price:250,level:3},
+];
+
+const XP_FOR_LEVEL = (lvl) => Math.floor(100 * Math.pow(lvl, 1.5));
+
+const getTier = (lvl) => {
+  if(lvl>=100) return {tier:4,label:'TIER IV — LEYENDA',color:'#ffd700',glow:'var(--glow-gold)'};
+  if(lvl>=61) return {tier:3,label:'TIER III — MAESTRO',color:'#aa44ff',glow:'var(--glow-purple)'};
+  if(lvl>=21) return {tier:2,label:'TIER II — HÉROE',color:'#00aaff',glow:'var(--glow-blue)'};
+  return {tier:1,label:'TIER I — AVENTURERO',color:'#aaffaa',glow:'var(--glow-green)'};
+};
+
+const getTierBenefits = (tier) => {
+  const b = {
+    1:['Cosméticos desbloqueados','Insignias especiales','Títulos de rango'],
+    2:['Acceso prioritario a biblioteca','Beneficios escolares','Tareas prioritarias'],
+    3:['Selección de asiento','Control del entorno escolar','Privilegios de maestro'],
+    4:['⭐ Receso Premium (+5 min)','Prioridad en todas las filas','Estatus LEYENDA'],
+  };
+  return b[tier]||[];
+};
+
+// ============================================================
+// STORAGE HELPERS - CON VALIDACIONES
+// ============================================================
+const LS = {
+  get:(k)=>{
+    try{
+      const data = localStorage.getItem(k);
+      return data ? JSON.parse(data) : null;
+    }catch(e){
+      console.warn('⚠️ Error leyendo', k, e);
+      return null;
+    }
+  },
+  set:(k,v)=>{
+    try{
+      localStorage.setItem(k,JSON.stringify(v));
+    }catch(e){
+      console.error('❌ Error guardando', k, e);
+    }
+  },
+  del:(k)=>{
+    try{
+      localStorage.removeItem(k);
+    }catch(e){
+      console.error('❌ Error eliminando', k, e);
+    }
+  },
+};
+
+// ============================================================
+// INIT DATA
+// ============================================================
+function initStorage(){
+  if(!LS.get('amz_initialized')){
+    const admin={
+      id:'admin_0',role:'admin',
+      username:'adminamazonica',password:'adminamazonica123',
+      name:'Administrador',emoji:'👑',image:null,
+    };
+    LS.set('amz_users',[admin]);
+    LS.set('amz_students',[]);
+    LS.set('amz_teachers',[]);
+    LS.set('amz_items', DEFAULT_ITEMS);
+    LS.set('amz_tasks',[]);
+    LS.set('amz_notifications',[]);
+    LS.set('amz_initialized',true);
+    console.log('✅ Sistema inicializado correctamente');
+  }
+}
+
+// ============================================================
+// UTIL COMPONENTS
+// ============================================================
+function PixelAvatar({user,size=48}){
+  if(user?.image){
+    return <img src={user.image} alt="avatar" style={{width:size,height:size,objectFit:'cover',border:'2px solid var(--border-bright)',imageRendering:'pixelated'}}/>;
+  }
+  const char = user?.character ? CHARACTERS.find(c=>c.id===user.character) : null;
+  return (
+    <div style={{width:size,height:size,background:'var(--bg-hover)',border:'2px solid var(--border-bright)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.5}}>
+      {char?char.emoji:(user?.role==='admin'?'👑':user?.role==='teacher'?'🎓':'⚔️')}
+    </div>
+  );
+}
+
+function XPBar({current,total,level}){
+  const pct = Math.min(100,(current/total)*100);
+  return(
+    <div>
+      <div className="flex justify-between text-xs text-dim mb-2">
+        <span style={{fontFamily:'Press Start 2P',fontSize:'8px'}}>NVL {level}</span>
+        <span style={{fontFamily:'Press Start 2P',fontSize:'7px'}}>{Math.floor(current)}/{total} XP</span>
+      </div>
+      <div className="progress-bar-wrap progress-xp">
+        <div className="progress-bar-fill" style={{width:pct+'%'}}/>
+      </div>
+    </div>
+  );
+}
+
+function CoinsDisplay({amount}){
+  return(
+    <div className="coins">
+      <span>🪙</span>
+      <span>{Math.floor(amount)}</span>
+      <span style={{fontSize:'10px',color:'var(--text-dim)'}}>AMZ V</span>
+    </div>
+  );
+}
+
+function Modal({title,onClose,children}){
+  return(
+    <div className="modal-overlay" onClick={(e)=>{if(e.target.className==='modal-overlay')onClose();}}>
+      <div className="modal-box slide-in">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="title-gold" style={{fontSize:'12px'}}>{title}</h2>
+          <button className="btn btn-red btn-xs" onClick={onClose}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Toast({msg,type,onDone}){
+  useEffect(()=>{
+    const t=setTimeout(onDone,3000);
+    return()=>clearTimeout(t);
+  },[onDone]);
+  const colors={success:'var(--accent-green)',error:'var(--accent-red)',info:'var(--accent-blue)',gold:'var(--accent-gold)'};
+  return(
+    <div style={{
+      position:'fixed',bottom:'20px',right:'20px',zIndex:9999,
+      background:'var(--bg-panel)',border:`3px solid ${colors[type]||colors.info}`,
+      padding:'15px 20px',maxWidth:'350px',
+      boxShadow:`0 0 20px ${colors[type]||colors.info}`,
+      fontFamily:'Press Start 2P',fontSize:'9px',
+      animation:'slideIn 0.3s ease-out',
+    }}>
+      {type==='success'&&'✅ '}{type==='error'&&'❌ '}{type==='gold'&&'🪙 '}{type==='info'&&'ℹ️ '}
+      {msg}
+    </div>
+  );
+}
+
+// ============================================================
+// LOGIN SCREEN
+// ============================================================
+function LoginScreen({onLogin}){
+  const [user,setUser]=useState('');
+  const [pass,setPass]=useState('');
+  const [err,setErr]=useState('');
+  const [loading,setLoading]=useState(false);
+
+  const handleLogin=()=>{
+    setLoading(true);
+    setErr('');
+    setTimeout(()=>{
+      const users=LS.get('amz_users')||[];
+      const found=users.find(u=>u.username===user&&u.password===pass);
+      if(found){
+        LS.set('amz_session',found.id);
+        onLogin(found);
+      } else {
+        setErr('Usuario o contraseña incorrectos');
+        setLoading(false);
+      }
+    },600);
+  };
+
+  return(
+    <div className="login-bg">
+      <div style={{width:'100%',maxWidth:'480px',padding:'20px'}}>
+        <div className="text-center mb-4">
+          <div className="float-anim" style={{fontSize:'80px',display:'block',marginBottom:'10px'}}>🏰</div>
+          <div className="login-title">AMAZÓNICA<br/>⚔️ RPG ⚔️</div>
+          <div style={{fontFamily:'VT323',fontSize:'22px',color:'var(--text-dim)',marginTop:'8px'}}>
+            Sistema de Recompensas Escolar
+          </div>
+        </div>
+
+        <div style={{
+          padding:'2px',
+          background:'linear-gradient(135deg,var(--accent-gold),transparent,var(--accent-purple),transparent,var(--accent-gold))',
+          marginBottom:'4px',
+        }}>
+        <div className="pixel-panel" style={{background:'rgba(10,10,30,0.95)'}}>
+          <div style={{fontFamily:'Press Start 2P',fontSize:'10px',color:'var(--accent-blue)',marginBottom:'20px',textAlign:'center'}}>
+            ▶ INICIAR SESIÓN
+          </div>
+          
+          <div className="mb-3">
+            <label style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--text-dim)',display:'block',marginBottom:'8px'}}>
+              USUARIO
+            </label>
+            <input className="pixel-input" placeholder="adminamazonica"
+              value={user} onChange={e=>setUser(e.target.value)}
+              onKeyDown={e=>e.key==='Enter'&&handleLogin()}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label style={{fontFamily:'Press Start 2P',fontSize:'8px',color:'var(--text-dim)',display:'block',marginBottom:'8px'}}>
+              CONTRASEÑA
+            </label>
+            <input className="pixel-input" type="password" placeholder="adminamazonica123"
+              value={pass} onChange={e=>setPass(e.target.value)}
+              onKeyDown={e=>e.key==='Enter'&&handleLogin()}
+            />
+          </div>
+
+          {err&&<div style={{color:'var(--accent-red)',fontFamily:'Press Start 2P',fontSize:'8px',marginBottom:'15px',textAlign:'center'}}>⚠ {err}</div>}
+
+          <button className="btn btn-gold w-full" style={{width:'100%',padding:'14px',fontSize:'10px'}}
+            onClick={handleLogin} disabled={loading}>
+            {loading?'CARGANDO...':'⚔️ ENTRAR AL MUNDO'}
+          </button>
+
+          <div style={{marginTop:'15px',fontSize:'8px',color:'var(--text-dim)',textAlign:'center'}}>
+            Credenciales de prueba:<br/>
+            usuario: <span style={{color:'var(--accent-gold)'}}>adminamazonica</span><br/>
+            contraseña: <span style={{color:'var(--accent-gold)'}}>adminamazonica123</span>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// CHARACTER SELECTION
+// ============================================================
+function CharacterSelect({user,onSelect}){
+  const [selected,setSelected]=useState(null);
+  const [filter,setFilter]=useState('all');
+
+  const filtered = filter==='all' ? CHARACTERS : CHARACTERS.filter(c=>c.type===filter);
+
+  return(
+    <div style={{minHeight:'100vh',background:'var(--bg-dark)',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}}>
+      <div style={{maxWidth:'900px',width:'100%'}}>
+        <div className="text-center mb-4">
+          <div style={{fontSize:'50px',marginBottom:'10px'}}>⚔️</div>
+          <h1 className="title-gold" style={{fontSize:'16px',marginBottom:'8px'}}>¡ELIGE TU PERSONAJE!</h1>
+          <p style={{color:'var(--text-dim)',fontFamily:'VT323',fontSize:'20px'}}>Hola {user.name}, esta es tu clase de combate</p>
+        </div>
+
+        <div className="flex gap-2 justify-center mb-4">
+          {['all','Fuerza','Agilidad','Inteligencia'].map(f=>(
+            <button key={f} className={`btn btn-sm ${filter===f?'btn-gold':'btn-dark'}`}
+              onClick={()=>setFilter(f)}>
+              {f==='all'?'TODOS':f==='Fuerza'?'⚔️ FUERZA':f==='Agilidad'?'💨 AGILIDAD':'🔮 INT'}
+            </button>
+          ))}
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:'12px',marginBottom:'20px'}}>
+          {filtered.map(c=>(
+            <div key={c.id}
+              className="pixel-card"
+              style={{
+                cursor:'pointer',
+                border:selected?.id===c.id?`3px solid ${c.color}`:'2px solid var(--border)',
+                boxShadow:selected?.id===c.id?`0 0 15px ${c.color}`:'none',
+                transform:selected?.id===c.id?'scale(1.05)':'scale(1)',
+              }}
+              onClick={()=>setSelected(c)}
+            >
+              <div style={{fontSize:'40px',textAlign:'center',marginBottom:'8px'}}>{c.emoji}</div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'8px',color:c.color,textAlign:'center',marginBottom:'4px'}}>{c.name}</div>
+              <div style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)',textAlign:'center',marginBottom:'8px'}}>{c.desc}</div>
+              <div style={{fontFamily:'Press Start 2P',fontSize:'7px',color:'#aaaaaa',textAlign:'center'}}>{c.type}</div>
+              <div style={{marginTop:'8px',display:'flex',justifyContent:'space-around',fontSize:'11px'}}>
+                <span style={{color:'#ff6644'}}>⚔{c.base.fuerza}</span>
+                <span style={{color:'#44aaff'}}>💨{c.base.agilidad}</span>
+                <span style={{color:'#aa44ff'}}>🔮{c.base.inteligencia}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {selected&&(
+          <div className="text-center">
+            <div style={{fontFamily:'VT323',fontSize:'22px',color:'var(--accent-gold)',marginBottom:'15px'}}>
+              Has elegido: <span style={{color:selected.color}}>{selected.emoji} {selected.name}</span>
+            </div>
+            <button className="btn btn-gold" style={{fontSize:'12px',padding:'15px 40px'}}
+              onClick={()=>onSelect(selected)}>
+              ⚔️ ¡COMENZAR AVENTURA!
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ADMIN SIMPLE DEMO
+// ============================================================
+function AdminDashboard(){
+  return(
+    <div style={{minHeight:'100vh',background:'var(--bg-dark)',padding:'20px'}}>
+      <div className="pixel-panel text-center">
+        <h1 className="title-gold" style={{fontSize:'20px',marginBottom:'20px'}}>👑 PANEL ADMINISTRATIVO</h1>
+        <div style={{fontSize:'48px',marginBottom:'20px'}}>🚀</div>
+        <p style={{fontFamily:'VT323',fontSize:'18px',color:'var(--text-dim)',marginBottom:'20px'}}>
+          Sistema AMDEX inicializado correctamente
+        </p>
+        <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--accent-green)',marginBottom:'20px'}}>
+          ✅ Base de datos en localStorage
+        </div>
+        <div style={{fontFamily:'VT323',fontSize:'16px',color:'var(--accent-gold)',marginBottom:'20px'}}>
+          ✅ React funcionando
+        </div>
+        <p style={{fontFamily:'VT323',fontSize:'14px',color:'var(--text-dim)'}}>
+          Versión 1.0 - Amazónica RPG School
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+export default function App(){
+  const [currentUser,setCurrentUser]=useState(null);
+  const [toast,setToast]=useState(null);
+  const [loading,setLoading]=useState(true);
+
+  useEffect(()=>{
+    console.log('🔄 App iniciando...');
+    try{
+      initStorage();
+      const sid=LS.get('amz_session');
+      if(sid){
+        const users=LS.get('amz_users')||[];
+        const u=users.find(x=>x.id===sid);
+        if(u){
+          console.log('✅ Usuario encontrado:', u.name);
+          setCurrentUser(u);
+        }
+      }
+    }catch(e){
+      console.error('❌ Error en inicialización:', e);
+    }
+    setLoading(false);
+  },[]);
+
+  const showToast=(msg,type='info')=>{
+    setToast({msg,type,id:Date.now()});
+  };
+
+  const handleLogin=(user)=>{
+    console.log('🔐 Login exitoso:', user.name);
+    setCurrentUser(user);
+  };
+
+  const handleLogout=()=>{
+    console.log('🚪 Logout');
+    LS.del('amz_session');
+    setCurrentUser(null);
+  };
+
+  if(loading){
+    return(
+      <div style={{minHeight:'100vh',background:'var(--bg-dark)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <div style={{textAlign:'center'}}>
+          <div className="float-anim" style={{fontSize:'60px',marginBottom:'20px'}}>🏰</div>
+          <div className="title-gold" style={{fontSize:'16px'}}>CARGANDO...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if(!currentUser){
+    return(
+      <>
+        <LoginScreen onLogin={handleLogin}/>
+        {toast&&<Toast key={toast.id} msg={toast.msg} type={toast.type} onDone={()=>setToast(null)}/>}
+      </>
+    );
+  }
+
+  if(currentUser.role==='student'&&!currentUser.character){
+    const handleCharSelect=(char)=>{
+      const users=LS.get('amz_users')||[];
+      const idx=users.findIndex(u=>u.id===currentUser.id);
+      if(idx>=0){
+        users[idx].character=char.id;
+        users[idx].stats={fuerza:char.base.fuerza,agilidad:char.base.agilidad,inteligencia:char.base.inteligencia};
+        users[idx].xp=0;
+        users[idx].level=1;
+        users[idx].coins=0;
+        users[idx].inventory=[];
+        users[idx].bag=null;
+        users[idx].tasksCompleted=0;
+        LS.set('amz_users',users);
+        setCurrentUser(users[idx]);
+      }
+    };
+    return <CharacterSelect user={currentUser} onSelect={handleCharSelect}/>;
+  }
+
+  return(
+    <>
+      <AdminDashboard/>
+      {toast&&<Toast key={toast.id} msg={toast.msg} type={toast.type} onDone={()=>setToast(null)}/>}
+    </>
+  );
+}
+
+// Mount - CON VALIDACIONES CORRECTAS
+document.addEventListener('DOMContentLoaded', function(){
+  console.log('🔧 Inicializando aplicación...');
+  try{
+    const container = document.getElementById('root');
+    if(!container){
+      console.error('❌ No se encontró elemento #root');
+      return;
+    }
+
+    // Verificar localStorage
+    try{
+      localStorage.setItem('test','test');
+      localStorage.removeItem('test');
+      console.log('✅ localStorage disponible');
+    }catch(e){
+      console.error('❌ localStorage no disponible:', e);
+      container.innerHTML = '<div style="color:#ff4455;font-family:monospace;padding:20px;background:#0a0a1a;text-align:center;height:100vh;display:flex;align-items:center;justify-content:center;">ERROR: localStorage deshabilitado (prueba modo incógnito o diferente navegador)</div>';
+      return;
+    }
+
+    // Verificar React
+    if(!window.React || !window.ReactDOM){
+      console.error('❌ React no cargó correctamente');
+      container.innerHTML = '<div style="color:#ff4455;font-family:monospace;padding:20px;background:#0a0a1a;text-align:center;height:100vh;display:flex;align-items:center;justify-content:center;">ERROR: React no cargó. Verifica tu conexión a internet.</div>';
+      return;
+    }
+
+    console.log('✅ Todas las dependencias cargadas correctamente');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App/>);
+    console.log('✅ Aplicación montada correctamente');
+  }catch(error){
+    console.error('❌ ERROR FATAL:', error);
+    document.getElementById('root').innerHTML = `<div style="color:#ff4455;font-family:monospace;padding:20px;background:#0a0a1a;text-align:center;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;"><strong>ERROR:</strong> ${error.message}</div>`;
+  }
+});
+</script>
 </body>
 </html>
